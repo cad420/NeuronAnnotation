@@ -1,0 +1,110 @@
+@import 'antd/dist/antd.css';
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+}
+.site-layout .site-layout-background {
+  background: #ffffff;
+}
+
+.ant-row {
+  background: #ffffff;
+}
+
+.code-box-demo {
+  text-align: center;
+}
+
+.ant-layout {
+  background: #ffffff;
+}
+.ant-layout-header {
+  background: #ffffff;
+}
+
+.ant-layout-footer {
+  color: #fff;
+  background: #ffffff;
+}
+
+[data-theme="dark"] .ant-layout-header {
+  background: #ffffff;
+}
+[data-theme="dark"] .ant-layout-footer {
+  background: #ffffff;
+}
+
+.ant-layout-sider {
+  color: #fff;
+  margin-top: 20px;
+  line-height: 30px;
+  background: #ffffff;
+  width: 500px;
+}
+
+[data-theme="dark"] .ant-layout-sider {
+  background: #ffffff;
+}
+
+.ant-layout-header {
+  margin-top: 20px;
+  line-height: 0px;
+  margin-left: 0px;
+  color: #fff;
+  background: rgb(255, 255, 255);
+}
+
+.ant-layout-content {
+  margin-top: 20px;
+  min-height: 120px;
+  line-height: 20px;
+  color: #fff;
+  background: rgb(255, 255, 255);
+}
+
+.ant-card {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.ant-table {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.ls{
+  justify-content: flex-end;
+  float: right;
+  margin-right: 10px;
+}
+
+[data-theme="dark"] .ant-layout-content {
+  background: #ffffff;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: 	#4682B4;
+  stroke-width: 3px;
+}
+
+.node text {
+  font: 12px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
+}
+
+
+
+/* > .code-box-demo > .ant-layout + .ant-layout {
+  margin-top: 16px;
+}  */
