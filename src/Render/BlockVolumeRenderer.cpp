@@ -204,6 +204,10 @@ auto BlockVolumeRenderer::get_frame() -> const Image & {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glReadPixels(0, 0, frame.width, frame.height, GL_RGB, GL_UNSIGNED_BYTE,
                  reinterpret_cast<void *>(frame.data.data()));
+    GL_CHECK
+    //call every time stop using opengl for this thread
+    //https://www.khronos.org/opengl/wiki/OpenGL_and_multithreading
+    wglMakeCurrent(NULL, NULL);
     return frame;
 }
 auto BlockVolumeRenderer::get_querypoint() -> const std::array<float, 8> {
@@ -220,7 +224,7 @@ auto BlockVolumeRenderer::get_querypoint() -> const std::array<float, 8> {
                             2 * sizeof(uint32_t), idx);
     }
     cur_verter_num++;
-
+    GL_CHECK
     return std::array<float, 8>{query_point_result[0],
                                 query_point_result[1],
                                 query_point_result[2],
@@ -323,32 +327,32 @@ void BlockVolumeRenderer::initGL() {
 }
 
 void BlockVolumeRenderer::InitVaoVbo() {
-    glGenBuffers(1, &line_VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
-    glBufferStorage(GL_ARRAY_BUFFER, 1024 * sizeof(float), nullptr, GL_DYNAMIC_STORAGE_BIT);
-    glGenVertexArrays(1, &line_VAO);
-    glGenBuffers(1, &line_EBO);
-    glBindVertexArray(line_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, line_VBO); //绑定同一个图的vbo
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),(void *)0);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, line_EBO);
-    glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, 1024 * 2 * sizeof(uint32_t), nullptr, GL_DYNAMIC_STORAGE_BIT);
+//    glGenBuffers(1, &line_VBO);
+//    glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
+//    glBufferStorage(GL_ARRAY_BUFFER, 1024 * sizeof(float), nullptr, GL_DYNAMIC_STORAGE_BIT);
+//    glGenVertexArrays(1, &line_VAO);
+//    glGenBuffers(1, &line_EBO);
+//    glBindVertexArray(line_VAO);
+//    glBindBuffer(GL_ARRAY_BUFFER, line_VBO); //绑定同一个图的vbo
+//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),(void *)0);
+//    glEnableVertexAttribArray(0);
+//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, line_EBO);
+//    glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, 1024 * 2 * sizeof(uint32_t), nullptr, GL_DYNAMIC_STORAGE_BIT);
 
-    // float vertices[]={
-    //         1000.f,1000.f,1000.f,
-    //         0.5,0.5,0.5,
-    //         1.f,0.f,0.f,
-    //         0.f,1.f,0.f,
-    // };
-    // GLuint vao,vbo;
-    // glGenVertexArrays(1,&line_VAO);
-    // glGenBuffers(1,&line_VBO);
-    // glBindVertexArray(line_VAO);
-    // glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    // glEnableVertexAttribArray(0);
+     float vertices[]={
+             500.f,500.f,1000.f,
+             2000,3000,1000,
+             1000.f,1000.f,1000.f,
+             1500.f,1800.f,1000.f,
+     };
+     GLuint vao,vbo;
+     glGenVertexArrays(1,&line_VAO);
+     glGenBuffers(1,&line_VBO);
+     glBindVertexArray(line_VAO);
+     glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
+     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+     glEnableVertexAttribArray(0);
 
     // glNamedBufferSubData(line_VBO, cur_verter_num * sizeof(float) * 3,
     //                     3 * sizeof(float), a);
@@ -487,11 +491,11 @@ void BlockVolumeRenderer::createGLSampler() {
     GL_EXPR(glSamplerParameterfv(gl_sampler,GL_TEXTURE_BORDER_COLOR,color));
 }
 void BlockVolumeRenderer::createGLShader() {
-    raycasting_shader=std::make_unique<sv::Shader>("../../../src/Render/Shaders/block_raycast_v.glsl",
-                                                   "../../../src/Render/Shaders/block_raycast_f.glsl");
+    raycasting_shader=std::make_unique<sv::Shader>("../../src/Render/Shaders/block_raycast_v.glsl",
+                                                   "../../src/Render/Shaders/block_raycast_f.glsl");
 //    raycasting_shader->setShader(shader::mix_block_raycast_v,shader::mix_block_raycast_f,nullptr);
-    line_shader=std::make_unique<sv::Shader>("../../../src/Render/Shaders/markedpath_v.glsl",
-                                                   "../../../src/Render/Shaders/markedpath_f.glsl");
+    line_shader=std::make_unique<sv::Shader>("../../src/Render/Shaders/markedpath_v.glsl",
+                                                   "../../src/Render/Shaders/markedpath_f.glsl");
 }
 
 void BlockVolumeRenderer::createCUgraphics() {
@@ -532,6 +536,10 @@ void BlockVolumeRenderer::setupRuntimeResource() {
 
 
 void BlockVolumeRenderer::set_mode(int mode) noexcept {
+    //call every time start to use opengl for this thread
+    if(!wglMakeCurrent(window_handle, gl_context)){
+        throw std::runtime_error("Failed to activate OpenGL 4.6 rendering context.");
+    }
     raycasting_shader->use();
     raycasting_shader->setInt("mode",mode);
 }
@@ -573,13 +581,12 @@ void BlockVolumeRenderer::setupShaderUniform() {
     raycasting_shader->setFloat("ks",1.0f);
     raycasting_shader->setVec3("light_direction",glm::normalize(glm::vec3(-1.0f,-1.0f,-1.0f)));
 
-    auto fov =
-        2 * atan(tan(45.0f * glm::pi<float>() / 180.0f / 2.0f) / camera.zoom);
+
     glm::mat4 projection = glm::perspective(
-        (double)fov, (double)window_width / (double)window_height, 0.0001, 5.0);
+        (double)glm::radians(camera.zoom), (double)window_width / (double)window_height, 1.0, 10000.0);
     glm::mat4 view = glm::lookAt(
         glm::vec3(camera.pos[0], camera.pos[1], camera.pos[2]),
-        glm::vec3(camera.front[0], camera.front[1], camera.front[2]),
+        glm::vec3(camera.pos[0]+camera.front[0], camera.pos[1]+camera.front[1], camera.pos[2]+camera.front[2]),
         glm::vec3(camera.up[0], camera.up[1], camera.up[2]));
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 MVP = projection * view * model;

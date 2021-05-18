@@ -261,18 +261,6 @@ public:
 };
 
 
-// class NeuronGraphDB{
-// public:
-//     NeuronGraphDB()=default;
-// private:
-//     bool isValid(int user_id) const{
-//         return user_id==owner_id;
-//     }
-// private:
-//     std::vector<std::unique_ptr<NeuronGraph>> graphs;
-//     int owner_id;
-// };
-
 class NeuronPool{
 public:
     void selectVertex(int id);
@@ -350,7 +338,7 @@ private:
     int user_id;
     std::shared_ptr<NeuronGraph> graph;
     std::map<string,std::shared_ptr<NeuronGraph> > *graphs_pool;
-    //std::shared_ptr<NeuronGraph> graph;
+
 };
 
 

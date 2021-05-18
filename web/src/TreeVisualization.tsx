@@ -189,24 +189,24 @@ class TreeVisualization extends React.Component {
         };
     }
 
-    componentDidUpdate(){
-        console.log(this.state.preData)
-        console.log(this.props.data)
-        if( JSON.stringify(this.state.preData) != JSON.stringify(this.props.data) ){
-            this.TreePlot();
-            this.setState({preData:this.props.data });
-        }
+    // componentDidUpdate(){
+    //     console.log(this.state.preData)
+    //     console.log(this.props.data)
+    //     if( JSON.stringify(this.state.preData) != JSON.stringify(this.props.data) ){
+    //         this.TreePlot();
+    //         this.setState({preData:this.props.data });
+    //     }
         
-    }
+    // }
 
-    componentDidMount() {
-        this.TreePlot()
-        this.setState({preData:this.props.data});
-        // if(this.props.data.graphs[this.props.selectedMapKey].sub[this.props.selectedVertexKey]){
-        //     this.RectPhyloPlot();
-        //     this.UnrootedPhyloPlot();
-        // }
-    }
+    // componentDidMount() {
+    //     this.TreePlot()
+    //     this.setState({preData:this.props.data});
+    //     // if(this.props.data.graphs[this.props.selectedMapKey].sub[this.props.selectedVertexKey]){
+    //     //     this.RectPhyloPlot();
+    //     //     this.UnrootedPhyloPlot();
+    //     // }
+    // }
 
     TreePlot = () => {
         const self = this;
