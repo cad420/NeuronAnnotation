@@ -181,12 +181,12 @@ void BlockVolumeRenderer::render_frame() {
 
     // glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glDisable(GL_DEPTH_TEST);
-            line_shader->use();
+    glDisable(GL_DEPTH_TEST);
+    line_shader->use();
     glBindVertexArray(line_VAO);
     glPointSize(3);
     glDrawArrays(GL_LINES,0,4);
-            glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
     glFinish();
 
@@ -491,11 +491,11 @@ void BlockVolumeRenderer::createGLSampler() {
     GL_EXPR(glSamplerParameterfv(gl_sampler,GL_TEXTURE_BORDER_COLOR,color));
 }
 void BlockVolumeRenderer::createGLShader() {
-    raycasting_shader=std::make_unique<sv::Shader>("../../src/Render/Shaders/block_raycast_v.glsl",
-                                                   "../../src/Render/Shaders/block_raycast_f.glsl");
+    raycasting_shader=std::make_unique<sv::Shader>("../../../src/Render/Shaders/block_raycast_v.glsl",
+                                                   "../../../src/Render/Shaders/block_raycast_f.glsl");
 //    raycasting_shader->setShader(shader::mix_block_raycast_v,shader::mix_block_raycast_f,nullptr);
-    line_shader=std::make_unique<sv::Shader>("../../src/Render/Shaders/markedpath_v.glsl",
-                                                   "../../src/Render/Shaders/markedpath_f.glsl");
+    line_shader=std::make_unique<sv::Shader>("../../../src/Render/Shaders/markedpath_v.glsl",
+                                                   "../../../src/Render/Shaders/markedpath_f.glsl");
 }
 
 void BlockVolumeRenderer::createCUgraphics() {

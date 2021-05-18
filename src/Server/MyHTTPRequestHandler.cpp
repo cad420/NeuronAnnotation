@@ -77,14 +77,14 @@ void MyHTTPRequestHandler::handleRequest(
                     }
                     if( modify_data.HasMember("visible") ){
                         result &= neuron_pool->changeVisible(line_id,modify_data["visible"].GetBool());
-                        //render_ws->sendIamgeFrame();
+                        render_ws->sendIamgeFrame();
                     }
                     if( modify_data.HasMember("selectedTableName") ){
                         result &= neuron_pool->changeTable(modify_data["selectedTableName"].GetString());
                     }
                     if( modify_data.HasMember("selectedRender" ) ){
                         result &= neuron_pool->changeMode(modify_data["selectedRender"].GetString());
-                        //render_ws->sendIamgeFrame();
+                        render_ws->sendIamgeFrame();
                     }
                     if( modify_data.HasMember("selectedTool" ) ){
                         neuron_pool->setTool(modify_data["selectedTool"].GetInt());
