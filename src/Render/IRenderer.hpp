@@ -26,6 +26,8 @@ public:
 
     virtual auto get_frame()->const Image& =0;
 
+    virtual auto get_pos_frame()->const Map<float>& = 0;
+
     virtual auto get_querypoint()->const std::array<float,8> =0;
 
     virtual void clear_scene()=0;
