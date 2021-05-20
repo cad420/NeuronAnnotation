@@ -16,6 +16,8 @@ layout(std430,binding=1) buffer QueryPoint{
     vec4 volume_pos[];
 }queryPoint;
 
+layout(binding=0,rgba32f) uniform image2D pos_frame;
+
 uniform float ka;
 uniform float kd;
 uniform float shininess;
@@ -111,6 +113,7 @@ for(int i=0;i<steps;i++){
         }
         sample_pos=sample_start_pos+i*ray_direction*step;
     }
+    imageStore(pos_frame,ivec2(gl_FragCoord),vec4(sample_pos,1.f));
     if(is_query){
         queryPoint.volume_pos[0]=vec4(sample_pos,1.f);
         queryPoint.volume_pos[1]=color;
