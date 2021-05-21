@@ -516,7 +516,7 @@ class SrcTable extends React.Component<EditableTableProps, EditableTableState>{
             )
           }
           ];
-          return <Table columns={columns} dataSource={data.sub} />;
+          return <Table columns={columns} dataSource={data.sub} pagination={{defaultPageSize:5}}/>;
         };
 
         const components = {
@@ -550,6 +550,7 @@ class SrcTable extends React.Component<EditableTableProps, EditableTableState>{
             rowKey="index"
             columns={columns as ColumnTypes}
             dataSource={dataSource} 
+            pagination={{hideOnSinglePage:true}}
             expandable={{ expandedRowRender }}
             defaultPageSize="10"
             showHeader={true}

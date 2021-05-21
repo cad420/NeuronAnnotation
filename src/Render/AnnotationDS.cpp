@@ -370,11 +370,9 @@ long long NeuronGraph::addSegment(int id, std::vector<std::array<float,4>> *path
         mid.pn = last_id;
         last_id = mid.id;
         mid.seg_id = segId;
-        mid.seg_in_id = index;
-        segments[segId].segment_vertex_ids[index] = mid.id;
+        mid.seg_in_id = index++;
         mid.seg_size = path->size(); //总顶点数
         inserts.push_back(make_shared<NeuronSWC>(mid));
-        index ++;
     }
     //连接两个点
     Vertex vEnd;
@@ -398,12 +396,21 @@ long long NeuronGraph::addSegment(int id, std::vector<std::array<float,4>> *path
     }
     list_and_hash_mutex.unlock();
 
-    if( DataBase::insertSWCs(inserts,tableName) ) return vEnd.id;
-    return -1;
+    if( DataBase::insertSWCs(inserts,tableName) ) return true;
+    return false;
 }
 
 void NeuronPool::selectVertex( int id ){
     m_selected_vertex_index = id;
+    float offset_x = m_camera.front[0]-graph->list_swc[graph->hash_swc_ids[id]].x;
+    float offset_y = m_camera.front[1]-graph->list_swc[graph->hash_swc_ids[id]].y;
+    float offset_z = m_camera.front[2]-graph->list_swc[graph->hash_swc_ids[id]].z;
+    m_camera.front[0] = graph->list_swc[graph->hash_swc_ids[id]].x;
+    m_camera.front[1] = graph->list_swc[graph->hash_swc_ids[id]].y;
+    m_camera.front[2] = graph->list_swc[graph->hash_swc_ids[id]].z;
+    m_camera.pos[0] = m_camera.pos[0]-offset_x;
+    m_camera.pos[1] = m_camera.pos[1]-offset_y;
+    m_camera.pos[2] = m_camera.pos[2]-offset_z;
 }
 
 void NeuronPool::selectVertex( int x, int y){
@@ -453,6 +460,7 @@ NeuronGraph::NeuronGraph(const char * filePath, const char * tableName){
 
     //构造函数后需要初始化绘制参数
     this->graphDrawManager = new GraphDrawManager(this);
+    this->graphDrawManager->InitGraphDrawManager();
 }
 
 
@@ -480,6 +488,7 @@ NeuronGraph::NeuronGraph(const char * string, int type){
     
     //构造函数后需要初始化绘制参数
     this->graphDrawManager = new GraphDrawManager(this);
+    this->graphDrawManager->InitGraphDrawManager();
 }
 
 long int NeuronGraph::getNewVertexId(){
@@ -841,7 +850,7 @@ bool NeuronGraph::deleteLine(int line_id){
             segments.erase(seg->first);
         }
     }
-    graphDrawManager->Delete(line_id);
+    //graphDrawManager->Delete(line_id);
     lines.erase(line_id);
     return result;
 }
@@ -924,7 +933,7 @@ std::array<int,2> NeuronPool::getSelectedVertexXY(){
     auto fov =
         2 * atan(tan(45.0f * glm::pi<float>() / 180.0f / 2.0f) / m_camera.zoom);
     glm::mat4 projection = glm::perspective(
-        (double)glm::radians(45.0f), (double)window_width / (double)window_height, (double)m_camera.n, (double)m_camera.f);
+        (double)fov, (double)window_width / (double)window_height, 0.0001, 5.0);
     glm::mat4 model = glm::mat4(1.0f);
     glm::vec4 viewport(0.0f,0.0f, (double)window_width, (double)window_height);
 
@@ -932,7 +941,6 @@ std::array<int,2> NeuronPool::getSelectedVertexXY(){
     glm::vec3 res = glm::project(glm::vec3(x,y,z),model,projection,viewport);
     // note: should use the saved modelview, projection and viewport matrix
     res.y = viewport[3]-res.y; //the Y axis is reversed
-    glm::vec3 unprojected = glm::unProject(res, model, projection, viewport);
-    //逆过程
+
     return {(int)res.x,(int)res.y};
 }

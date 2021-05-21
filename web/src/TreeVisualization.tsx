@@ -189,33 +189,51 @@ class TreeVisualization extends React.Component {
         };
     }
 
-    // componentDidUpdate(){
-    //     console.log(this.state.preData)
-    //     console.log(this.props.data)
-    //     if( JSON.stringify(this.state.preData) != JSON.stringify(this.props.data) ){
-    //         this.TreePlot();
-    //         this.setState({preData:this.props.data });
-    //     }
-        
-    // }
+    componentDidUpdate(){
+        console.log(this.state.preData)
+        console.log(this.props.data)
+        if( JSON.stringify(this.state.preData) != JSON.stringify(this.props.data) ){
+            new Promise((resolve,reject) => {
+                this.setState({preData:this.props.data });
+                this.setState({rootIndex:this.props.data.selectedVertexIndex});
+                resolve(this.setState({rootIndex:this.props.data.selectedVertexIndex}));
+            }).then(()=>{
+                this.TreePlot();
+            })            
+        }
+    }
 
-    // componentDidMount() {
-    //     this.TreePlot()
-    //     this.setState({preData:this.props.data});
-    //     // if(this.props.data.graphs[this.props.selectedMapKey].sub[this.props.selectedVertexKey]){
-    //     //     this.RectPhyloPlot();
-    //     //     this.UnrootedPhyloPlot();
-    //     // }
-    // }
+    componentDidMount() {
+        if( this.props.data.graphs && this.props.data.graphs[this.props.selectedMapKey].sub[this.props.selectedVertexKey] ){
+            new Promise((resolve,reject) => {
+                this.setState({preData:this.props.data });
+                this.setState({rootIndex:this.props.data.selectedVertexIndex});
+                resolve(this.setState({rootIndex:this.props.data.selectedVertexIndex}));
+            }).then(()=>{
+                this.TreePlot();
+            })            
+        }
+        // if(this.props.data.graphs[this.props.selectedMapKey].sub[this.props.selectedVertexKey]){
+        //     this.RectPhyloPlot();
+        //     this.UnrootedPhyloPlot();
+        // }
+    }
 
     TreePlot = () => {
         const self = this;
-        console.log(this.props.data.graphs[this.props.selectedMapKey].sub);
+        d3
+        .select("#Rectangle")
+        .select("svg")
+        .selectAll("*")
+        .remove()
+        //console.log(this.props.data.graphs[this.props.selectedMapKey].sub);
         if(this.props.data.graphs.length != 0 && this.props.data.graphs[this.props.selectedMapKey].sub ){
+            if( ! this.props.data.graphs[this.props.selectedMapKey].sub ) return;
+            console.log(getTreeData( this.props.data.graphs[this.props.selectedMapKey] ,self.state.rootIndex));
             var treeData = JSON.parse(getTreeData( this.props.data.graphs[this.props.selectedMapKey] ,self.state.rootIndex));
 
             // Set the dimensions and margins of the diagram
-            var margin = ({top: 50, right: 100, bottom: 50, left: 50});
+            var margin = ({top: 50, right: 1500, bottom: 50, left: 50});
             //var margin = {top: 20, right: 90, bottom: 30, left: 90},
             var width = 1200 - margin.left - margin.right;
             var height = 300 - margin.top - margin.bottom;
@@ -223,11 +241,6 @@ class TreeVisualization extends React.Component {
             // append the svg object to the body of the page
             // appends a 'group' element to 'svg'
             // moves the 'group' element to the top left margin
-            d3
-                .select("#Rectangle")
-                .select("svg")
-                .selectAll("*")
-                .remove()
 
             var svg = d3.select("#Rectangle").select("svg")
                 .attr("width", width + margin.right + margin.left)
@@ -334,7 +347,7 @@ class TreeVisualization extends React.Component {
 
             // Update the node attributes and style
             nodeUpdate.select('circle.node')
-                .attr('r', 10)
+                .attr('r', 7)
                 .style("fill", function(d) {
                     return d._children ? "#B0C4DE" : "#ffffff";
                 })
@@ -416,219 +429,6 @@ class TreeVisualization extends React.Component {
             }
             }
         }
-    }
-
-    RectPhyloPlot = () => {
-        const treeString = GraphToNewick(this.props.data.graphs[this.props.selectedMapKey],this.props.selectedVertexKey);
-        const parsedTree = lw.readTree(treeString);
-        const rectPhylo = lw.rectangleLayout(parsedTree);
-        const self = this;
-
-        d3
-        .select("#Rectangle")
-        .select("svg")
-        .selectAll("*")
-        .remove()
-    
-        const svg = d3
-            .select("#Rectangle")
-            .select("svg")
-            .attr("width", w)
-            .attr("height", h)
-            .attr("font-family", "sans-serif")
-            .attr("font-size", 10);
-
-        // create a grouping variable
-        const group = svg.append('g');
-
-        const stroke_width = 3;
-        // draw horizontal lines
-        group
-            .append('g')
-            .attr('class', 'phylo_lines')
-            .selectAll('lines')
-            .data(rectPhylo.data)
-            .join('line')
-            .attr('class', 'lines')
-            .attr('x1', d => xScaleRect(d.x0) - stroke_width / 2)
-            .attr('y1', d => yScaleRect(d.y0))
-            .attr('x2', d => xScaleRect(d.x1) - stroke_width / 2)
-            .attr('y2', d => yScaleRect(d.y1))
-            .attr('stroke-width', stroke_width)
-            .attr('stroke', this.props.data.graphs[this.props.selectedMapKey].color); //线段上色
-
-        // draw vertical lines
-        group
-            .append('g')
-            .attr('class', 'phylo_lines')
-            .selectAll('lines')
-            .data(rectPhylo.vertical_lines)
-            .join('line')
-            .attr('class', 'lines')
-            .attr('x1', d => xScaleRect(d.x0))
-            .attr('y1', d => yScaleRect(d.y0))
-            .attr('x2', d => xScaleRect(d.x1))
-            .attr('y2', d => yScaleRect(d.y1))
-            .attr('stroke-width', stroke_width)
-            .attr('stroke', this.props.data.graphs[this.props.selectedMapKey].color); //线段上色
-
-        // draw nodes
-        group
-            .append('g')
-            .attr('class', 'phylo_points')
-            .selectAll('.dot')
-            // remove rogue dot.
-            .data(rectPhylo.data.filter(d => d.x1 > 0))
-            .join('circle')
-            .attr('class', 'dot')
-            .attr('r', function (d) {
-                if (d.thisLabel == self.props.selectedVertexKey) return 6;
-                else return 4;
-            })
-            .attr('cx', d => xScaleRect(d.x1))
-            .attr('cy', d => yScaleRect(d.y1))
-            .attr('stroke', function(d){
-              if (d.thisLabel == self.props.selectedVertexKey)
-                return 'red';
-              else return 'black';
-            })
-            .attr('stroke-width', function (d) {
-                if (d.thisLabel == self.props.selectedVertexKey) return 3;
-                if (d.isTip) {
-                    return 2;
-                } else {
-                    return 1;
-                }
-            })
-            .attr('fill', 'white');
-
-        group.selectAll('.dot')
-            .on("mouseover", (d,i) => {
-                console.log(d)
-            d3.select("#tooltip").remove();
-            d3.select("#Rectangle")
-                .select("svg")
-                .append("text")
-                .attr("x", d.layerX)
-                .attr("y", d.layerY-18)
-                .attr("id", "tooltip")
-                .attr("class","tooltip")
-                .attr("text-anchor", "middle")
-                .attr("font-size", "13px")
-                .text( function(){
-                    let num = i.thisLabel ? i.thisLabel : 0;
-                    return "跳转至" + num + "号点";
-                });
-        })
-        .on("click",(d,i)=>{
-            let record = {
-                index:self.props.data.graphs[self.props.selectedMapKey].sub[i.thisLabel].index,
-                key:i.thisLabel
-            };
-            self.props.onClickJumpToVex(record);
-        })
-        .on("mouseout", (d) => {
-            d3.select("#tooltip").remove();
-        })
-
-    }
-
-    UnrootedPhyloPlot = () => {
-        const treeString = GraphToNewick(this.props.data.graphs[this.props.selectedMapKey],this.props.selectedVertexKey);
-        const parsedTree = lw.readTree(treeString);
-        const unrootedPhylo = lw.unrooted(parsedTree);
-        const self = this;
-        d3
-            .select("#EqualAngle")
-            .select("svg")
-            .selectAll("*")
-            .remove()
-        
-        const svg = d3
-            .select("#EqualAngle")
-            .select("svg")
-            .attr("width", w)
-            .attr("height", h)
-            .attr("font-family", "sans-serif")
-            .attr("font-size", 10);
-
-        var group = svg.append("g");
-
-        // draw lines
-        group
-            .append("g")
-            .attr("class", "phylo_lines")
-            .selectAll("lines")
-            .data(unrootedPhylo.edges)
-            .enter()
-            .append("line")
-            .attr("class", "lines")
-            .attr("x1", d => xScaleUnroot(d.x1))
-            .attr("y1", d => yScaleUnroot(d.y1))
-            .attr("x2", d => xScaleUnroot(d.x2))
-            .attr("y2", d => yScaleUnroot(d.y2))
-            .attr("stroke-width", 3)
-            .attr("stroke", self.props.data.graphs[self.props.selectedMapKey].color);
-
-        // draw points
-        group
-            .append("g")
-            .attr("class", "phylo_points")
-            .selectAll(".dot")
-            .data(unrootedPhylo.data)
-            .enter()
-            .append("circle")
-            .attr("class", "dot")
-            .attr("r", function (d) {
-              if (d.thisLabel == self.props.selectedVertexKey) return 6;
-              else return 4;
-            })
-            .attr("cx", d => xScaleUnroot(d.x))
-            .attr("cy", d => yScaleUnroot(d.y))
-            .attr('stroke', function(d){
-              if (d.thisLabel == self.props.selectedVertexKey)
-                return 'red';
-              else return 'black';
-            })
-            .attr('stroke-width', function (d) {
-                if (d.thisLabel == self.props.selectedVertexKey) return 3;
-                if (d.isTip) {
-                    return 2;
-                } else {
-                    return 1;
-                }
-            })
-            .attr('fill', 'white')
-            
-        group.selectAll('.dot')
-            .on("mouseover", (d,i) => {
-                console.log(d)
-            d3.select("#tooltip").remove();
-            d3.select("#EqualAngle")
-                .select("svg")
-                .append("text")
-                .attr("x", d.layerX)
-                .attr("y", d.layerY-18)
-                .attr("id", "tooltip")
-                .attr("class","tooltip")
-                .attr("text-anchor", "middle")
-                .attr("font-size", "13px")
-                .text( function(){
-                    let num = i.thisLabel ? i.thisLabel : 0;
-                    return "跳转至" + num + "号点";
-                });
-        })
-        .on("click",(d,i)=>{
-            let record = {
-                index:self.props.data.graphs[self.props.selectedMapKey].sub[i.thisLabel?i.thisLabel:0].index,
-                key:i.thisLabel ? i.thisLabel : 0
-            };
-            self.props.onClickJumpToVex(record);
-        })
-        .on("mouseout", (d) => {
-            d3.select("#tooltip").remove();
-        })
-
     }
 
     onChange = (value) => {

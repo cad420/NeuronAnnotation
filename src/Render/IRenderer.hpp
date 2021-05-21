@@ -8,6 +8,8 @@
 #include <Image.hpp>
 #include <MouseKeyEvent.hpp>
 #include <TransferFunction.hpp>
+#include <AnnotationDS.hpp>
+
 class IRenderer{
 public:
     virtual void set_volume(const char* path) = 0;
@@ -31,6 +33,8 @@ public:
     virtual auto get_querypoint()->const std::array<float,8> =0;
 
     virtual void clear_scene()=0;
+
+    virtual void set_neuronpool(NeuronPool *np)=0;
 
 };
 #endif //NEURONANNOTATION_IRENDERER_H

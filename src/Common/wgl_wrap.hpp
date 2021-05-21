@@ -7,6 +7,7 @@
 #include <glad/wgl.h>
 #include <windows.h>
 #include <stdexcept>
+#include <iostream>
 typedef HGLRC WINAPI wglCreateContextAttribsARB_type(HDC hdc, HGLRC hShareContext,
                                                      const int *attribList);
 wglCreateContextAttribsARB_type *wglCreateContextAttribsARB;

@@ -41,7 +41,7 @@ body,
 
 .ant-layout-sider {
   color: #fff;
-  margin-top: 20px;
+  /* margin-top: 20px; */
   line-height: 30px;
   background: #ffffff;
   width: 500px;
@@ -60,7 +60,7 @@ body,
 }
 
 .ant-layout-content {
-  margin-top: 20px;
+  /* margin-top: 20px; */
   min-height: 120px;
   line-height: 20px;
   color: #fff;
@@ -90,7 +90,7 @@ body,
 .node circle {
   fill: #fff;
   stroke: 	#4682B4;
-  stroke-width: 3px;
+  stroke-width: 2px;
 }
 
 .node text {

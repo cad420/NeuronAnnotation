@@ -7,7 +7,8 @@
 #include <cassert>
 #include <stdexcept>
 #include <vector>
-#include<Common/utils.hpp>
+#include <Common/utils.hpp>
+#include <glad/gl.h>
 using namespace std;
 
 namespace {

@@ -107,3 +107,6 @@ auto VolumeRenderer::get_pos_frame() -> const Map<float> & {
     return impl->get_pos_frame();
 }
 
+void VolumeRenderer::set_neuronpool(NeuronPool *np){
+    impl->set_neuronpool(np);
+}

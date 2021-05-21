@@ -14,7 +14,7 @@
 #include <unordered_set>
 #include <Common/boundingbox.hpp>
 #include <Common/help_cuda.hpp>
-
+#include <AnnotationDS.hpp>
 #include "ShaderProgram.hpp"
 #include <Render/BlockData/BlockVolumeManager.hpp>
 
@@ -53,6 +53,8 @@ public:
     void clear_scene() override;
 
     void set_mode(int mode) noexcept override;
+
+    void set_neuronpool(NeuronPool *np) override;
 
 private:
 
@@ -156,10 +158,17 @@ private:
     // std::vector<unsigned int> line_EBOs;
     // std::vector<unsigned int> line_VAOs;
     std::vector<int> line_num_of_path_;
+
+    NeuronPool *neuron_pool;
+    
+    int render_mode;
+
     void InitVaoVbo();
 
     std::unique_ptr<sv::Shader> raycasting_shader;
     std::unique_ptr<sv::Shader> line_shader;
+
+public:
 #ifdef _WINDOWS
     HDC window_handle;
     HGLRC gl_context;
@@ -167,6 +176,7 @@ private:
 
 #endif
 
+private:
 
     uint32_t window_width,window_height;
 

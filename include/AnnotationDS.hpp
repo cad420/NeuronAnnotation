@@ -170,12 +170,17 @@ struct Line : public BasicObj //Line是有关关键Vertex的集合
 class GraphDrawManager{
     public:
         NeuronGraph * graph;
+        bool inited;
+        unsigned int vbo; //顶点集合
         float *line_vertices = nullptr;
-        vector<unsigned int *> paths; //顶点索引从1开始
-        std::map<int, std::pair<unsigned int, unsigned int> > hash_lineid_vao_vbo;
-        vector<unsigned int> line_num_of_path_;
+        //vector<unsigned int *> paths; //顶点索引从1开始
+        std::map<int, std::pair<unsigned int, unsigned int> > hash_lineid_vao_ebo;
+        std::map<int,int> line_num_of_path;
     public:
-        //GraphDrawManager( NeuronGraph *g ):graph=g;
+        GraphDrawManager( NeuronGraph *g ){
+            graph = g;
+            inited = false;
+        }
         void RebuildLine( int line_id );
         void InitGraphDrawManager();
         void Delete( int line_id );
@@ -199,7 +204,8 @@ public:
     
     bool addVertex(Vertex* v);
     bool addSegment(int id, Vertex* v);
-    
+    long long addSegment(int id,std::vector<std::array<float,4>> *path); //return final id
+
     bool devidedInto2Lines(int x, int  y);
 
     long int addLine();
@@ -284,7 +290,7 @@ public:
     bool addLine();
     bool deleteLine(int line_id);
     bool jumpToVertex(int id);
-
+    bool addSegment(std::vector<std::array<float,4>> *path); //return final id
     bool dividedInto2Lines(int x, int y);
     bool deleteVertex(int x, int y, std::string &error);
     bool changeMode(string modeName);
@@ -293,6 +299,7 @@ public:
     bool changeColor(int line_id, string color);
     bool changeName(int line_id, string name);
     bool hasCamera();
+    std::array<int,2> getSelectedVertexXY();
     void setGraph( std::shared_ptr<NeuronGraph> pN){
         graph = pN;
     };

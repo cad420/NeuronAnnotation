@@ -12,6 +12,7 @@
 #include "Image.hpp"
 #include "TransferFunction.hpp"
 #include "MouseKeyEvent.hpp"
+#include "AnnotationDS.hpp"
 class IRenderer;
 using GetRendererBackend=IRenderer* (*)();
 class VolumeRenderer{
@@ -35,6 +36,8 @@ public:
     void set_querypoint(std::array<uint32_t,2> screen_pos) noexcept;
 
     void set_mousekeyevent(MouseKeyEvent event) noexcept;
+
+    void set_neuronpool(NeuronPool *np);
 
     void render_frame();
 

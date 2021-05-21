@@ -65,6 +65,7 @@ void MyHTTPRequestHandler::handleRequest(
                     }
                     if( modify_data.HasMember("selectedVertexIndex") && modify_data["selectedVertexIndex"].IsInt64() ){
                         neuron_pool->selectVertex(modify_data["selectedVertexIndex"].GetInt64());
+                        render_ws->sendIamgeFrame();
                     }
                     if( modify_data.HasMember("selectedLineIndex") && modify_data["selectedLineIndex"].IsInt64() ){
                         neuron_pool->selectLine(modify_data["selectedLineIndex"].GetInt64());
@@ -77,14 +78,15 @@ void MyHTTPRequestHandler::handleRequest(
                     }
                     if( modify_data.HasMember("visible") ){
                         result &= neuron_pool->changeVisible(line_id,modify_data["visible"].GetBool());
-                        //render_ws->sendIamgeFrame();
+                        render_ws->sendIamgeFrame();
                     }
                     if( modify_data.HasMember("selectedTableName") ){
                         result &= neuron_pool->changeTable(modify_data["selectedTableName"].GetString());
+                        render_ws->sendIamgeFrame();
                     }
                     if( modify_data.HasMember("selectedRender" ) ){
                         result &= neuron_pool->changeMode(modify_data["selectedRender"].GetString());
-                        //render_ws->sendIamgeFrame();
+                        render_ws->sendIamgeFrame();
                     }
                     if( modify_data.HasMember("selectedTool" ) ){
                         neuron_pool->setTool(modify_data["selectedTool"].GetInt());

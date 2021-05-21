@@ -2,21 +2,6 @@
 find_package(CUDA REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenGL REQUIRED)
-# list(
-#         APPEND
-#         SERVER_SRCS
-#         main.cpp
-#         NeuronAnnotaterApplication.cpp
-#         RequestHandlerFactory.cpp
-#         MyHTTPRequestHandler.cpp
-#         UploadRequestHandler.cpp
-#         DownloadRequestHandler.cpp
-#         WebSocketRequestHandler.cpp
-#         VolumeRenderer.cpp
-#         AnnotationDS.cpp
-#         Image.cpp
-#         DataBase.cpp
-# )
 
 if(WIN32)
     find_package(OpenGL REQUIRED)
@@ -31,9 +16,9 @@ if(WIN32)
             DownloadRequestHandler.cpp
             WebSocketRequestHandler.cpp
             VolumeRenderer.cpp
-            AnnotationDS.cpp
             Image.cpp
-            DataBase.cpp
+            AnnotationDS.cpp
+            GraphDrawManager.cpp
             ${PROJECT_SOURCE_DIR}/third_party/glad_wgl/src/gl.c
             ${PROJECT_SOURCE_DIR}/third_party/glad_wgl/src/wgl.c
     )
@@ -51,8 +36,8 @@ elseif(UNIX)
         WebSocketRequestHandler.cpp
         VolumeRenderer.cpp
         AnnotationDS.cpp
+        GraphDrawManager.cpp
         Image.cpp
-        DataBase.cpp
         ${PROJECT_SOURCE_DIR}/third_party/glad/src/glad.c
     )
     set(GLAD_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/third_party/glad/include)
@@ -60,13 +45,11 @@ elseif(UNIX)
     set(OPENGL_LIBRARIES OpenGL::GL;OpenGL::EGL)
 endif()
 
-# add_library( AnnotationDS SHARED AnnotationDS.cpp )
-# add_library( DataBase SHARED DataBase.cpp )
-
 add_executable(NeuronAnnotateServer ${SERVER_SRCS})
 target_include_directories(NeuronAnnotateServer PRIVATE
         ${PROJECT_SOURCE_DIR}/third_party
-        ${GLAD_INCLUDE_DIR})
+        ${GLAD_INCLUDE_DIR}
+        ${PROJECT_SOURCE_DIR}/src/Algorithm)
 target_link_libraries(NeuronAnnotateServer PRIVATE
         Poco::Net
         Poco::Util
@@ -77,6 +60,7 @@ target_link_libraries(NeuronAnnotateServer PRIVATE
         Threads::Threads
         glm::glm
         seria::seria
+        DataBase
         ${OPENGL_LIBRARIES}
         ${CUDA_CUDA_LIBRARY}
         ${CMAKE_DL_LIBS}

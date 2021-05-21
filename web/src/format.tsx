@@ -266,8 +266,9 @@ const Format: React.FC = () => {
                 </Header>
                 <Layout>
                 <Sider width={500}>
+                    <div style={{height: 500}}>
                     <SrcTable
-                        style={{ width: 480 }}
+                        style={{ width: 480, height:500 }}
                         rowSelection={rowSelection}
                         onClickJumpToVex={onClickJumpToVex}
                         data={data}
@@ -275,7 +276,8 @@ const Format: React.FC = () => {
                         setSrc={setSrc}
                         initSelectedKey={initSelectedKey}
                         />
-                    <Divider dashed />
+                    </div>
+                    <Divider dashed /> 
                     <Card style={{ width: 480 }}>
                         <Info
                             data={data}
