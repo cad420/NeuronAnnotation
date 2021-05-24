@@ -30,6 +30,8 @@ body,
 .ant-layout-footer {
   color: #fff;
   background: #ffffff;
+  margin-left: 0px;
+  margin-right: 0px;
 }
 
 [data-theme="dark"] .ant-layout-header {
@@ -41,7 +43,7 @@ body,
 
 .ant-layout-sider {
   color: #fff;
-  margin-top: 20px;
+  /* margin-top: 20px; */
   line-height: 30px;
   background: #ffffff;
   width: 500px;
@@ -52,7 +54,7 @@ body,
 }
 
 .ant-layout-header {
-  margin-top: 20px;
+  margin-top: 0px;
   line-height: 0px;
   margin-left: 0px;
   color: #fff;
@@ -60,8 +62,9 @@ body,
 }
 
 .ant-layout-content {
-  margin-top: 20px;
+  /* margin-top: 20px; */
   min-height: 120px;
+  margin-left: 100px;
   line-height: 20px;
   color: #fff;
   background: rgb(255, 255, 255);
@@ -77,6 +80,11 @@ body,
   margin-right: 10px;
 }
 
+.ant-divider {
+  margin-top: 0px;
+  margin-bottom: 20px;
+}
+
 .ls{
   justify-content: flex-end;
   float: right;
@@ -90,7 +98,7 @@ body,
 .node circle {
   fill: #fff;
   stroke: 	#4682B4;
-  stroke-width: 3px;
+  stroke-width: 2px;
 }
 
 .node text {
@@ -103,7 +111,12 @@ body,
   stroke-width: 2px;
 }
 
-
+.wuliwala{
+  height: 500;
+  overflow-y: auto;
+  width: 500;
+  overflow-x: auto;
+}
 
 /* > .code-box-demo > .ant-layout + .ant-layout {
   margin-top: 16px;

@@ -289,6 +289,7 @@ namespace SWCP
 				return false;
 			}
 		}
+		while( AcceptWhightSpace() ){}
 		if( Accept('#') ){ //其他相关SWC
 			const char* infoStart = m_iterator;
 			const char* infoEnd = m_iterator;
@@ -301,7 +302,7 @@ namespace SWCP
 			for( int i = 0 ; i < infoStr.size() ; i ++ ){
 				if( infoStr[i].find("name") != infoStr[i].npos ){
 					int startPos = infoStr[i].find(":");
-					swc.name = infoStr[i].substr(startPos+1,infoStr[i].length()-startPos);
+					swc.name = infoStr[i].substr(startPos+2,infoStr[i].length()-startPos-3);
 					continue;
 				}
 				if( infoStr[i].find("line_id") != infoStr[i].npos ){
@@ -341,7 +342,7 @@ namespace SWCP
 				}
 				if( infoStr[i].find("color") != infoStr[i].npos ){
 					int startPos = infoStr[i].find(":");
-					swc.color = infoStr[i].substr(startPos+1,infoStr[i].length()-startPos);
+					swc.color = infoStr[i].substr(startPos+2,infoStr[i].length()-startPos-3);
 					continue;
 				}
 			}
@@ -355,7 +356,7 @@ namespace SWCP
 		graph.hash_swc_ids[swc.id] = graph.list_swc.size()-1;
 		graph.segments[swc.seg_id].size = swc.seg_size;
 		graph.segments[swc.seg_id].line_id = swc.line_id;
-		graph.segments[swc.seg_id].segment_vertex_ids.insert({swc.seg_in_id,graph.list_swc.size()-1});
+		graph.segments[swc.seg_id].segment_vertex_ids.insert({swc.seg_in_id,swc.id});
 		if( graph.lines.find(swc.line_id) == graph.lines.end()){
 			graph.lines[swc.line_id].id = swc.line_id;
 			graph.lines[swc.line_id].color = swc.color;
@@ -393,13 +394,13 @@ namespace SWCP
 		}
 		else if( swc.seg_in_id == 1 && swc.pn != -1 ){ //关键点的后一个节点
 			graph.lines[swc.line_id].hash_vertexes[swc.pn].hash_linked_seg_ids[swc.seg_id] = true;
-			graph.segments[swc.seg_id].segment_vertex_ids.insert({0,graph.hash_swc_ids[swc.pn]});
+			graph.segments[swc.seg_id].segment_vertex_ids.insert({0,swc.pn});
 			graph.segments[swc.seg_id].start_id = swc.pn;
 		}
 		if( swc.seg_in_id == 1 && swc.seg_size == 2){ //一共只有两个节点
 			graph.lines[swc.line_id].hash_vertexes[swc.pn].hash_linked_seg_ids[swc.seg_id] = true;
 			graph.lines[swc.line_id].hash_vertexes[swc.pn].linked_vertex_ids[swc.id] = true;
-			graph.segments[swc.seg_id].segment_vertex_ids.insert({0,graph.hash_swc_ids[swc.pn]});
+			graph.segments[swc.seg_id].segment_vertex_ids.insert({0,swc.pn});
 			graph.segments[swc.seg_id].start_id = swc.pn;
 		}
 		if( swc.id > graph.getCurMaxVertexId() ) graph.setMaxVertexId(swc.id);

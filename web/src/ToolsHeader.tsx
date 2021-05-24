@@ -68,14 +68,14 @@ class ToolsHeader extends React.Component {
                     >
                 <Radio.Button value={2} ><ScissorOutlined /></Radio.Button>
                 </Tooltip>
-                <Tooltip
+                {/* <Tooltip
                     placement="bottom"
                     title="选框模式"
                     arrowPointAtCenter
                     color="blue"
                     >
                 <Radio.Button value={3} ><RadiusSettingOutlined /></Radio.Button>
-                </Tooltip>
+                </Tooltip> */}
                 <Tooltip
                     placement="bottom"
                     title="消除模式"

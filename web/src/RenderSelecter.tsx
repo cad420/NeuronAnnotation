@@ -43,7 +43,7 @@ class RenderSelecter extends React.Component {
                         <Radio.Group value={selectedRender} onChange={(v)=>this.handleRenderChange(v.target.value)}>
                             <Radio.Button value="MIP">MIP</Radio.Button>
                             <Radio.Button value="DVR">DVR</Radio.Button>
-                            <Radio.Button value="MUTI">MUTI</Radio.Button>
+                            <Radio.Button value="LINE">LINE</Radio.Button>
                         </Radio.Group>
                 </Space>
           </div>

@@ -332,40 +332,6 @@ class SrcTable extends React.Component<EditableTableProps, EditableTableState>{
         }
       };
 
-      handleAdd = () => {
-          let self = this;
-          const ws = new WebSocket(_SOCKETLINK);
-          ws.onopen = () => {
-              console.log("连接成功，添加路径");
-              ws.send(JSON.stringify({addline: 1}));
-              const hide = message.loading('正在添加...', 0);
-              setTimeout(hide, 500);
-          }
-          ws.onmessage = (msg) => {
-              const {data} = msg;
-              ws.close();
-              try {
-                  const obj = JSON.parse(data);
-                  if (obj.type == "error") {
-                      console.log(obj.message);
-                      message.error(obj.message);
-                  } else if (obj.type == "success") {
-                      console.log(obj.message);
-                      message.success(obj.message);
-                  } else {
-                      let p = new Promise(resolve => {
-                          resolve(self.props.setData(obj));
-                      }).then(() => {
-                          self
-                              .props
-                              .initSelectedKey();
-                      })
-                  }
-              } catch  {
-                  console.log(data);
-              }
-          };
-      };
 
     setColor = (color:Color,row:DataType) =>{
         const newData = [...this.props.data.graphs];
@@ -373,7 +339,8 @@ class SrcTable extends React.Component<EditableTableProps, EditableTableState>{
         const item = newData[index];
         if(item.color == color.hex) return;
         
-        item.color = color.hex;
+        item.color = (color.hex).substr(0,7);
+        console.log(item.color);
         const ws = new WebSocket(_SOCKETLINK);
   
         ws.onopen = () => {
@@ -382,7 +349,7 @@ class SrcTable extends React.Component<EditableTableProps, EditableTableState>{
                 JSON.stringify({
                   modify : {
                     index : row.index,
-                    color : color.hex
+                    color : item.color
                   }
                 })
             );
@@ -516,7 +483,7 @@ class SrcTable extends React.Component<EditableTableProps, EditableTableState>{
             )
           }
           ];
-          return <Table columns={columns} dataSource={data.sub} />;
+          return <Table columns={columns} dataSource={data.sub} pagination={{defaultPageSize:5}}/>;
         };
 
         const components = {
@@ -543,19 +510,19 @@ class SrcTable extends React.Component<EditableTableProps, EditableTableState>{
           });
         return(
         <div style={{margin:'0 8px'}}>
-            <Button onClick={()=>self.handleAdd()} type="primary" style={{ marginBottom: 16 }} ><FileAddOutlined />添加新路径</Button>
             <Table components={components}
             rowSelection={{type:"radio",...this.props.rowSelection}}
             rowClassName={() => 'editable-row'}
             rowKey="index"
             columns={columns as ColumnTypes}
             dataSource={dataSource} 
+            pagination={{hideOnSinglePage:true}}
             expandable={{ expandedRowRender }}
             defaultPageSize="10"
             showHeader={true}
             size='small'
             style={{border:10}}
-            />
+             />
         </div>
         )
     };

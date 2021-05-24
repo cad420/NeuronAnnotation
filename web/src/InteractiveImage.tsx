@@ -22,7 +22,7 @@ const Image: React.FC = (props) => {
   const img = useRef<HTMLImageElement>(null);
   useEffect(() => {
     let loop = 0;
-    let lastPosition = [1024, 1408, 1286];
+    let lastPosition = [7024, 5408, 2286];
     let lastTarget = [0, 0, -1];
     let lastUp = [0, 1, 0];
     let lastZoom = 20.0;

@@ -8,6 +8,7 @@ import RenderSelecter from "./RenderSelecter";
 import TreeVisualization from "./TreeVisualization";
 import "./style.css";
 import Info from "./Info";
+import AddLine from "./AddLine";
 
 const { Header, Footer, Sider, Content } = Layout;
 const _SOCKETLINK = "ws://127.0.0.1:12121/info";
@@ -250,10 +251,13 @@ const Format: React.FC = () => {
                 <Layout>
                 <Header style={{marginTop:40}}>
                     <Row> 
-                        <Col flex="1 1 300px">
+                        <Col flex="380px">
                             <RenderSelecter />
                         </Col>
-                        <Col flex="auto">
+                        <Col flex="0 0 280px"> 
+                            <AddLine/>
+                        </Col>
+                        <Col flex="0 0 700px">
                         <ToolsHeader data={data}/>
                         </Col>
                         <Col flex="auto">
@@ -265,18 +269,20 @@ const Format: React.FC = () => {
                     </Row>
                 </Header>
                 <Layout>
-                <Sider width={500}>
+                <Sider width={610}>
+                    <div style={{ width: 590, height:490, overflowY:'auto',marginLeft:20 }} >
                     <SrcTable
-                        style={{ width: 480 }}
                         rowSelection={rowSelection}
                         onClickJumpToVex={onClickJumpToVex}
                         data={data}
                         setData={setData}
                         setSrc={setSrc}
                         initSelectedKey={initSelectedKey}
+                        
                         />
-                    <Divider dashed />
-                    <Card style={{ width: 480 }}>
+                    </div>
+                    <Divider dashed /> 
+                    <Card style={{ width: 550, marginLeft:50 }}>
                         <Info
                             data={data}
                             selectedMapKey={selectedMapKey}
@@ -299,14 +305,12 @@ const Format: React.FC = () => {
                 </Layout>
                 <Footer>
                     <Col span={24}>
-                        <Card>
-                            <TreeVisualization
-                                data={data}
-                                onClickJumpToVex={onClickJumpToVex}
-                                selectedMapKey={selectedMapKey}
-                                selectedVertexKey={selectedVertexKey}
-                            />
-                        </Card>
+                        <TreeVisualization
+                            data={data}
+                            onClickJumpToVex={onClickJumpToVex}
+                            selectedMapKey={selectedMapKey}
+                            selectedVertexKey={selectedVertexKey}
+                        />
                     </Col>
                 </Footer>
             </div>

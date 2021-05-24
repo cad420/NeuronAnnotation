@@ -65,6 +65,7 @@ void MyHTTPRequestHandler::handleRequest(
                     }
                     if( modify_data.HasMember("selectedVertexIndex") && modify_data["selectedVertexIndex"].IsInt64() ){
                         neuron_pool->selectVertex(modify_data["selectedVertexIndex"].GetInt64());
+                        render_ws->sendIamgeFrame();
                     }
                     if( modify_data.HasMember("selectedLineIndex") && modify_data["selectedLineIndex"].IsInt64() ){
                         neuron_pool->selectLine(modify_data["selectedLineIndex"].GetInt64());
@@ -74,6 +75,7 @@ void MyHTTPRequestHandler::handleRequest(
                     }
                     if( modify_data.HasMember("color") && modify_data["color"].IsString() ){
                         result &= neuron_pool->changeColor(line_id,modify_data["color"].GetString());
+                        render_ws->sendIamgeFrame();
                     }
                     if( modify_data.HasMember("visible") ){
                         result &= neuron_pool->changeVisible(line_id,modify_data["visible"].GetBool());
@@ -81,6 +83,7 @@ void MyHTTPRequestHandler::handleRequest(
                     }
                     if( modify_data.HasMember("selectedTableName") ){
                         result &= neuron_pool->changeTable(modify_data["selectedTableName"].GetString());
+                        render_ws->sendIamgeFrame();
                     }
                     if( modify_data.HasMember("selectedRender" ) ){
                         result &= neuron_pool->changeMode(modify_data["selectedRender"].GetString());
@@ -109,6 +112,7 @@ void MyHTTPRequestHandler::handleRequest(
                     }
                     if (neuron_pool->deleteLine(line_id)){
                         render_ws->sendSuccessFrame("删除成功");
+                        render_ws->sendIamgeFrame();
                     }else{
                         render_ws->sendErrorFrame("删除失败");
                     }

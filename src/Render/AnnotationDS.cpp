@@ -8,7 +8,7 @@
 #include <Poco/JSON/Array.h>
 #include <Poco/Dynamic/Var.h>
 #include <DataBase.hpp>
-#include <glm/glm.hpp>
+#include<glm/glm.hpp>
 
 #include<glm/gtc/matrix_transform.hpp>
 
@@ -39,7 +39,7 @@ bool NeuronGraph::formatGraphFromSWCList(){
             Vertex v;
             list_swc[i].line_id = lines[line_id].id = v.line_id = line_id;
             list_swc[i].color = lines[line_id].color = v.color = "#aa0000";
-            list_swc[i].name = lines[line_id].name = v.name = "neuro" + std::to_string(line_id);
+            list_swc[i].name = lines[line_id].name = v.name = "default" + std::to_string(line_id);
             list_swc[i].user_id = lines[line_id].user_id = -1;
             v.id = list_swc[i].id;
             v.radius = list_swc[i].radius;
@@ -159,7 +159,6 @@ bool NeuronGraph::formatGraphFromSWCList(){
             list_swc[index].user_id = list_swc[hash_swc_ids[list_swc[index].pn]].user_id;
             list_swc[index].line_id = list_swc[hash_swc_ids[pn]].line_id;
             list_swc[index].seg_id = list_swc[hash_swc_ids[pn]].seg_id;
-            list_swc[index].seg_in_id = list_swc[hash_swc_ids[pn]].seg_in_id + 1;
             segments[list_swc[pn].seg_id].size = list_swc[hash_swc_ids[pn]].seg_in_id + 2;
             segments[list_swc[pn].seg_id].segment_vertex_ids[list_swc[hash_swc_ids[pn]].seg_in_id+1] = list_swc[index].id;
             //更新所有前seg节点长度
@@ -295,7 +294,7 @@ long int NeuronGraph::addLine(){
     Line l;
     stringstream fmt;
     l.id = line_id;
-    fmt << "neuro" << line_id;
+    fmt << "deault" << line_id;
     l.name = fmt.str();
     l.color = "#aa0000";
     l.user_id = 1;
@@ -334,7 +333,8 @@ bool NeuronPool::addSegment(std::vector<std::array<float,4>> *path){
 }
 
 long long NeuronGraph::addSegment(int id, std::vector<std::array<float,4>> *path){
-    NeuronSWC *vStartswc = &list_swc[hash_swc_ids[id]];
+    NeuronSWC vStartswc = list_swc[hash_swc_ids[id]];
+    NeuronSWC vEndswc;
     //生成新的segments
     long int segId = getNewSegmentId();
     //路径生成算法之后修改该部分
@@ -342,38 +342,31 @@ long long NeuronGraph::addSegment(int id, std::vector<std::array<float,4>> *path
     int index = 0;
     std::vector<shared_ptr<NeuronSWC> >inserts;
     for( auto v : *path ){
-        if( index == 0 ){
+        if( index = 0 ){
             Segment s;
             segments[segId] = s;
             segments[segId].id = segId;
-            segments[segId].color = vStartswc->color;
-            segments[segId].name = vStartswc->name;
+            segments[segId].color = vStartswc.color;
+            segments[segId].name = vStartswc.name;
             segments[segId].start_id = id;
             segments[segId].size = path->size();
-            segments[segId].line_id = vStartswc->line_id;
+            segments[segId].line_id = vStartswc.line_id;
             segments[segId].segment_vertex_ids[0] = id;
-            lines[vStartswc->line_id].hash_vertexes[id].hash_linked_seg_ids[segId] = true;
+            lines[vStartswc.line_id].hash_vertexes[id].hash_linked_seg_ids[segId] = true;
             index = 1;
-            if( vStartswc->seg_id == -1 ){
-                vStartswc->seg_id = segId;
-                vStartswc->seg_in_id = 0;
-                vStartswc->seg_size = path->size();
-                DataBase::modifySWC(*vStartswc,tableName);
-            }
             continue;
         }
         NeuronSWC mid;
         mid.id = getNewVertexId();
-        mid.line_id = vStartswc->line_id;
-        mid.name = vStartswc->name;
-        mid.color = vStartswc->color;
-        mid.user_id = lines[vStartswc->line_id].user_id;
+        mid.line_id = vStartswc.line_id;
+        mid.name = vStartswc.name;
+        mid.color = vStartswc.color;
+        mid.user_id = lines[vStartswc.line_id].user_id;
         time_t t;
         mid.timestamp = time(&t);
         mid.x = v[0];
         mid.y = v[1];
         mid.z = v[2];
-        mid.type = Type(3);
         mid.pn = last_id;
         last_id = mid.id;
         mid.seg_id = segId;
@@ -390,14 +383,11 @@ long long NeuronGraph::addSegment(int id, std::vector<std::array<float,4>> *path
     vEnd.x = inserts[inserts.size()-1]->x;
     vEnd.y = inserts[inserts.size()-1]->y;
     vEnd.z = inserts[inserts.size()-1]->z;
-    vEnd.line_id = vStartswc->line_id;
-    time_t t;
-    vEnd.timestamp = time(&t);
     vEnd.hash_linked_seg_ids[segId] = true;
     vEnd.linked_vertex_ids[id] = true;
-    lines[vStartswc->line_id].hash_vertexes[id].linked_vertex_ids[vEnd.id] = true;
+    lines[vStartswc.line_id].hash_vertexes[id].linked_vertex_ids[vEnd.id] = true;
     segments[segId].end_id = vEnd.id;
-    lines[vStartswc->line_id].hash_vertexes[vEnd.id] = vEnd;
+    lines[vStartswc.line_id].hash_vertexes[vEnd.id] = vEnd;
 
     list_and_hash_mutex.lock();
     {
@@ -407,7 +397,7 @@ long long NeuronGraph::addSegment(int id, std::vector<std::array<float,4>> *path
         }
     }
     list_and_hash_mutex.unlock();
-    graphDrawManager->setRebuildLine(vEnd.line_id);
+    graphDrawManager->setRebuildLine(vStartswc.line_id);
     if( DataBase::insertSWCs(inserts,tableName) ) return vEnd.id;
     return -1;
 }
@@ -423,7 +413,7 @@ long NeuronPool::selectVertex( int x, int y){
 long NeuronGraph::selectVertex( int x, int y, NeuronPool *n ){
     double best_dist;
     int id = findNearestVertex(x,y,n,best_dist);
-    if( list_swc[hash_swc_ids[id]].line_id == n->getSelectedLineIndex() && best_dist < 1000 ){
+    if( list_swc[hash_swc_ids[id]].line_id == n->getSelectedLineIndex() ){
         if( lines[n->getSelectedLineIndex()].hash_vertexes.find(id) != lines[n->getSelectedLineIndex()].hash_vertexes.end() ){
             n->selectVertex(id);
         }
@@ -699,7 +689,6 @@ bool NeuronGraph::changeColor(int line_id, string color){
         NeuronSWC *swc = &list_swc[hash_swc_ids[v->second.id]];
         swc->color = color;
         modifySWCs.push_back(make_shared<NeuronSWC>(*swc));
-        graphDrawManager->rebuild_swc_id[hash_swc_ids[swc->id]] = 1; //修正端点index;
         for( auto seg = v->second.hash_linked_seg_ids.begin() ; seg != v->second.hash_linked_seg_ids.end() ; seg++ ){
             Segment *s = &segments[seg->first];
             s->color = color;
@@ -707,12 +696,10 @@ bool NeuronGraph::changeColor(int line_id, string color){
                 NeuronSWC *pSWC = &list_swc[hash_swc_ids[p->second]];
                 pSWC->color = color;
                 modifySWCs.push_back(make_shared<NeuronSWC>(*pSWC));
-                graphDrawManager->rebuild_swc_id[hash_swc_ids[pSWC->id]] = 1;
             }
         }
     }
     if( modifySWCs.size() == 0 ) return true;
-    graphDrawManager->setRebuildLine(line_id);
     if( DataBase::modifySWCs(modifySWCs,tableName) ) return true;
     else return false;
 }
@@ -733,7 +720,7 @@ bool NeuronGraph::deleteVertex(int x, int y, NeuronPool *neuron_pool, std::strin
     }
     double best_dist;
     long id = findNearestVertex( x, y, neuron_pool, best_dist);
-    if( id == -1 || best_dist > 1000 ){
+    if( id == -1 || best_dist > 10 ){
         error = "选择节点失败，请重新选择";
         return false;
     }
@@ -780,9 +767,6 @@ bool NeuronGraph::deleteVertex(int x, int y, NeuronPool *neuron_pool, std::strin
             lines[v->line_id].hash_vertexes[start_id].hash_linked_seg_ids.erase(it->first);
             neuron_pool->selectVertex(start_id);
         }
-        segments.erase(it->first); //删除该段，在绘制时该段就不再绘制
-        lines[v->line_id].hash_vertexes.erase(v->id);
-        graphDrawManager->setRebuildLine(neuron_pool->getSelectedLineIndex());
         return true;
     }
     else{
@@ -823,7 +807,7 @@ long NeuronGraph::findNearestVertex(int cx, int cy, NeuronPool * neuron_pool, do
 
 		double cur_dist = (res.x-cx)*(res.x-cx)+(res.y-cy)*(res.y-cy);
 
-		if ( !init ) {	best_dist = cur_dist; best_ind = v.first; init = true;}
+		if ( !init ) {	best_dist = cur_dist; best_ind = v.first; }
 		else 
 		{	
 			if (cur_dist < best_dist ) 
@@ -886,95 +870,20 @@ bool NeuronPool::changeTable(string tableName){
 bool NeuronPool::dividedInto2Lines(int x, int y){
     double best_dist;
     long id = graph->findNearestVertex(x,y,this,best_dist);
-    if( best_dist > 1000 ) return false;
+    if( best_dist > 10 ) return false;
     if(graph->devidedInto2Lines(id)){
-        // std::string tableName = graph->tableName;
-        // (*graphs_pool)[tableName] = std::make_shared<NeuronGraph>(tableName.c_str(),0);
-        // graph = (*graphs_pool)[tableName];
+        std::string tableName = graph->tableName;
+        (*graphs_pool)[tableName] = std::make_shared<NeuronGraph>(tableName.c_str(),0);
+        graph = (*graphs_pool)[tableName];
         return true;
     }
     return false;
 }
 
 bool NeuronGraph::devidedInto2Lines(long id){
-    NeuronSWC *swc = &list_swc[hash_swc_ids[id]];
-    int last_line_id = swc->line_id;
-    Vertex *v = &lines[last_line_id].hash_vertexes[id];
-    std::vector<std::shared_ptr<NeuronSWC> > modifySWCs;
-    for( auto seg : v->hash_linked_seg_ids ){
-        if( segments[seg.first].end_id == v->id ){ //修改以v为终点的seg的终点
-            segments[seg.first].end_id = segments[seg.first].segment_vertex_ids[segments[seg.first].size - 2]; //终点替换为倒数第二个点
-            segments[seg.first].size = segments[seg.first].size-1;
-            for( auto seg_v : segments[seg.first].segment_vertex_ids ){
-                NeuronSWC *segSWC = &list_swc[hash_swc_ids[seg_v.second]];
-                if( segSWC->seg_id == seg.first ){ //更新当前seg的size swc
-                    segSWC->seg_size = segments[seg.first].size;
-                    modifySWCs.push_back(make_shared<NeuronSWC>(*segSWC)); //数据库修改更新的SWC;
-                }
-            }
-            lines[last_line_id].hash_vertexes[segments[seg.first].start_id].linked_vertex_ids.erase(id); //删除上一个点与当前点的连线
-            Vertex vEnd;
-            vEnd.x = list_swc[hash_swc_ids[segments[seg.first].end_id]].x;
-            vEnd.y = list_swc[hash_swc_ids[segments[seg.first].end_id]].y;
-            vEnd.z = list_swc[hash_swc_ids[segments[seg.first].end_id]].z;
-            vEnd.type = list_swc[hash_swc_ids[segments[seg.first].end_id]].type;
-            vEnd.name = list_swc[hash_swc_ids[segments[seg.first].end_id]].name;
-            vEnd.color = list_swc[hash_swc_ids[segments[seg.first].end_id]].color;
-            vEnd.id = list_swc[hash_swc_ids[segments[seg.first].end_id]].id;
-            vEnd.timestamp = list_swc[hash_swc_ids[segments[seg.first].end_id]].timestamp;
-            vEnd.line_id = list_swc[hash_swc_ids[segments[seg.first].end_id]].line_id;
-            vEnd.radius = list_swc[hash_swc_ids[segments[seg.first].end_id]].r;
-
-            vEnd.hash_linked_seg_ids[seg.first] = true; //连接新终点与段
-            vEnd.linked_vertex_ids[segments[seg.first].start_id] = true; //连接新终点与起点
-            lines[last_line_id].hash_vertexes[vEnd.id] = vEnd;
-            lines[last_line_id].hash_vertexes[segments[seg.first].start_id].linked_vertex_ids[vEnd.id] = true; //连接起点与新终点
-            v->hash_linked_seg_ids.erase(seg.first);
-            v->linked_vertex_ids.erase(segments[seg.first].start_id);
-            break;
-           }
-    }//去除连接
-    int line_id = getNewLineId();
-    Line l;
-    lines[line_id] = l;
-    lines[line_id].id = line_id;
-    lines[line_id].name = "neuro" + std::to_string(line_id);
-    lines[line_id].color = "#aa0000";
-    std::vector<int> dfs_vector;
-    map<int,bool> seg_visited; //段的visited
-    map<int,bool> vec_visited; //点的visited
-    dfs_vector.push_back(id);
-    while( dfs_vector.size() != 0 ){
-        int v_id = dfs_vector[dfs_vector.size()-1]; //拿出最后一个元素
-        vec_visited[v_id] = true;
-        dfs_vector.pop_back();
-        for( auto seg : lines[last_line_id].hash_vertexes[v_id].hash_linked_seg_ids ){
-            if( !seg_visited[seg.first] ){ //未访问的段
-                segments[seg.first].line_id = line_id; //修改旧段的line_id
-                for( auto seg_v : segments[seg.first].segment_vertex_ids ){
-                    NeuronSWC *segSWC = &list_swc[hash_swc_ids[seg_v.second]];
-                    segSWC->line_id = line_id; //修改段属的line_id
-                    segSWC->name = lines[line_id].name;
-                    segSWC->color = lines[line_id].color;
-                    modifySWCs.push_back(make_shared<NeuronSWC>(*segSWC)); //数据库修改更新的SWC;
-                    graphDrawManager->rebuild_swc_id[hash_swc_ids[segSWC->id]] = 1;
-                }
-                seg_visited[seg.first] = true;
-            }
-        }
-        Vertex v_tmp = lines[last_line_id].hash_vertexes[v_id];
-        lines[last_line_id].hash_vertexes.erase(v_id); //在旧路径上删除节点
-        v_tmp.line_id = line_id;
-        lines[line_id].hash_vertexes[v_tmp.id] = v_tmp;
-        for( auto v_v : v_tmp.linked_vertex_ids ){
-            if( !vec_visited[v_v.first] ){ //未访问的点
-                dfs_vector.push_back(v_v.first);
-            }
-        }
-    }
-    graphDrawManager->setRebuildLine(line_id);
-    graphDrawManager->setRebuildLine(last_line_id);
-    if(DataBase::modifySWCs(modifySWCs,tableName)) return true;
+    NeuronSWC swc = list_swc[hash_swc_ids[id]];
+    swc.pn = -1;
+    if(DataBase::modifySWC(swc,tableName)) return true;
     return false;
 }
 

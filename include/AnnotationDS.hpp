@@ -170,15 +170,29 @@ struct Line : public BasicObj //Line是有关关键Vertex的集合
 class GraphDrawManager{
     public:
         NeuronGraph * graph;
-        float *line_vertices = nullptr;
-        vector<unsigned int *> paths; //顶点索引从1开始
-        std::map<int, std::pair<unsigned int, unsigned int> > hash_lineid_vao_vbo;
-        vector<unsigned int> line_num_of_path_;
+        bool inited;
+        unsigned int vbo; //顶点集合
+        std::map<int, std::pair<unsigned int, unsigned int> > hash_lineid_vertex_vao_ebo; //line_顶点vao
+        std::map<int,int> vector_num_of_path; //line 点数
+        long long v_count; //当前顶点数量
+        std::map<int, std::pair<unsigned int, unsigned int> > hash_lineid_vao_ebo;
+        std::map<int,int> line_num_of_path;
+        std::vector<int> rebuild_line_id; //-1 default
+        std::map<int,int> rebuild_swc_id;
     public:
-        //GraphDrawManager( NeuronGraph *g ):graph=g;
-        void RebuildLine( int line_id );
+        GraphDrawManager( NeuronGraph *g ){
+            graph = g;
+            inited = false;
+            rebuild_line_id.clear();
+            rebuild_swc_id.clear();
+        }
+        void setRebuildLine(int id){
+            rebuild_line_id.push_back(id);
+        }
+        void RebuildLine();
         void InitGraphDrawManager();
         void Delete( int line_id );
+        void UpdateSWC();
 };
 
 
@@ -188,7 +202,7 @@ public:
     NeuronGraph(const char * filePath, const char * tableName);
     NeuronGraph(){};
     // explicit NeuronGraph(int idx):graph_index(idx){}
-    void selectVertex( int x, int y, NeuronPool *n );
+    long selectVertex( int x, int y, NeuronPool *n );
     bool selectVertices(std::vector<int> idxes);
     bool selectEdges(std::vector<int> idxes);
     bool selectLines(std::vector<int> idxes);
@@ -199,8 +213,9 @@ public:
     
     bool addVertex(Vertex* v);
     bool addSegment(int id, Vertex* v);
-    
-    bool devidedInto2Lines(int x, int  y);
+    long long addSegment(int id,std::vector<std::array<float,4>> *path); //return final id
+
+    bool devidedInto2Lines(long id);
 
     long int addLine();
     long int getNewVertexId();
@@ -252,6 +267,7 @@ private:
     // std::vector<Segment*> cur_select_segments;//last add edge or current select edge
     // std::vector<Line*> cur_select_lines;
     // int select_obj;//0 for nothing, 1 for point, 2 for edge, 3 for points, 4 for edges,5 for line,6 for lines
+
 public:
     bool formatGraphFromSWCList();
     int formatSegments(std::map<int,vector<int>> &vertexLinkedCount, int index);
@@ -264,7 +280,7 @@ public:
 class NeuronPool{
 public:
     void selectVertex(int id);
-    void selectVertex(int x, int y);
+    long selectVertex(int x, int y);
     void selectLine(int id);
     NeuronPool(){
         m_selected_vertex_index = -1;
@@ -275,7 +291,7 @@ public:
         m_tool = 0; //默认拖拽
 
         window_width = 1200;
-        window_height = 900;
+        window_height = 700;
     }
     string getLinestoJson();
     bool getLineVisible(int id);
@@ -284,7 +300,7 @@ public:
     bool addLine();
     bool deleteLine(int line_id);
     bool jumpToVertex(int id);
-
+    bool addSegment(std::vector<std::array<float,4>> *path); //return final id
     bool dividedInto2Lines(int x, int y);
     bool deleteVertex(int x, int y, std::string &error);
     bool changeMode(string modeName);
@@ -293,6 +309,7 @@ public:
     bool changeColor(int line_id, string color);
     bool changeName(int line_id, string name);
     bool hasCamera();
+    std::array<int,2> getSelectedVertexXY();
     void setGraph( std::shared_ptr<NeuronGraph> pN){
         graph = pN;
     };

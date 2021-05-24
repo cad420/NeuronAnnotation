@@ -12,6 +12,7 @@
 #include <ErrorMessage.hpp>
 #include <SWCP.hpp>
 #include <DataBase.hpp>
+#include <AutoPathFind.hpp>
 using Poco::Util::Application;
 
 void WebSocketRequestHandler::handleRequest(
@@ -66,26 +67,74 @@ void WebSocketRequestHandler::handleRequest(
                     seria::deserialize(query_point,values);
                     //进一步确定当前操作
                     switch(Tools(neuron_pool->getTool())){
-                        case Drag: //拖拽不需要判断
-                            neuron_pool->selectVertex(query_point.x,query_point.y);
-                        break;
-                        case Insert:
-                            auto query_res = getQueryPoint({query_point.x,query_point.y});
-                            if( query_res[7] > 0.5f ){
-                                if(neuron_pool->addVertex(query_res[0],query_res[1],query_res[2])){
-                                    sendSuccessFrame("添加成功");
-                                }else{
-                                    sendErrorFrame("添加失败");
+                        case Drag:
+                            {
+                                long id = neuron_pool->selectVertex(query_point.x,query_point.y);
+                                std::stringstream  fmt;
+                                fmt << "switch to " << id ;
+                                if( id != -1 ){
+                                    string st =  fmt.str();
+                                    sendSuccessFrame(st);
+                                    sendIamgeFrame();
                                 }
+                                break;
                             }
-                            else{
+
+                        case Insert:
+                        {
+                            volume_render_lock->lock();
+                            
+                                block_volume_renderer->enter_gl();
+
+                                block_volume_renderer->set_camera(neuron_pool->getCamera());
+                                block_volume_renderer->set_mode(neuron_pool->getRenderMode());
+                                block_volume_renderer->set_querypoint({query_point.x,query_point.y});
+                                
+                                block_volume_renderer->render_frame();
+                                auto query_res = block_volume_renderer->get_querypoint();
+                                auto maptable = block_volume_renderer->get_pos_frame();
+                            
+                                block_volume_renderer->exit_gl();
+
+                            volume_render_lock->unlock();
+
+                            if( query_res[7] > 0.1f ){
+                                if(neuron_pool->getSelectedVertexIndex() == -1 ){
+                                // if( true ){
+                                    if(neuron_pool->addVertex(query_res[0],query_res[1],query_res[2])){
+                                        sendSuccessFrame("添加成功");
+                                        sendIamgeFrame();
+                                    }else{
+                                        sendErrorFrame("添加失败");
+                                    }
+                                }
+                                else{
+                                    AutoPathGen *ag = new AutoPathGen();
+                                    std::array<int,2> start = neuron_pool->getSelectedVertexXY();
+                                    ag->point1 = {(unsigned int)start[1],(unsigned int)start[0]}; //获取起点的坐标
+                                    ag->point0 = {query_point.y,query_point.x}; //终点坐标
+                                    auto path = ag->GenPath_v1(maptable);
+
+                                    if(neuron_pool->addSegment(&path)){ //涉及到点的添加
+                                        sendSuccessFrame("添加成功");
+                                        sendIamgeFrame();
+                                    }else{
+                                        sendErrorFrame("添加失败");
+                                    }
+                                }
+                            }else{
                                 printf("%lf Alpha is too low!\n",query_res[7]);
                                 sendErrorFrame("选择点透明度低，请重新选择");
                             }
                         break;
+                        }
                         case Cut:
-                            //找到最近的一个端点
-                            //把图按照这个断点分成两个
+                            if(neuron_pool->dividedInto2Lines(query_point.x,query_point.y)){
+                                sendSuccessFrame("切分成功");
+                                sendIamgeFrame();
+                            }else{
+                                sendErrorFrame("切分失败");
+                            }
                         break;
                         case Select:
                             //矩形框选中 TODO
@@ -96,6 +145,7 @@ void WebSocketRequestHandler::handleRequest(
                             bool res = neuron_pool->deleteVertex(query_point.x,query_point.y,error);
                             if( res ){
                                 sendSuccessFrame("删除成功");
+                                sendIamgeFrame();
                             }else{
                                 sendErrorFrame(error);
                             }
@@ -147,26 +197,23 @@ void WebSocketRequestHandler::sendSuccessFrame( std::string successMessage){
 void WebSocketRequestHandler::sendIamgeFrame(){
     using WebSocket = Poco::Net::WebSocket;
     volume_render_lock->lock();
-    {
+    
+        block_volume_renderer->enter_gl(); //线程进入gl时必须调用
+
         block_volume_renderer->set_mode(neuron_pool->getRenderMode());
+        block_volume_renderer->set_neuronpool(neuron_pool);
         block_volume_renderer->set_camera(neuron_pool->getCamera());
         block_volume_renderer->render_frame();
         auto &image = block_volume_renderer->get_frame();
-        std::cout<<image.width<<" "<<image.height<<std::endl;
-        auto encoded = Image::encode(image, Image::Format::JPEG);
-        ws->sendFrame(encoded.data.data(), encoded.data.size(),WebSocket::FRAME_BINARY);
-    }
-    volume_render_lock->unlock();
-}
 
-auto WebSocketRequestHandler::getQueryPoint(std::array<uint32_t, 2> point)  -> const std::array<float, 8> {
-    using WebSocket = Poco::Net::WebSocket;
-    volume_render_lock->lock();
-    block_volume_renderer->set_querypoint(point);
-    block_volume_renderer->render_frame();
-    auto query_res = block_volume_renderer->get_querypoint();
+        block_volume_renderer->exit_gl(); //线程离开gl时必须调用
+    
     volume_render_lock->unlock();
-    return query_res;
+
+    std::cout<<image.width<<" "<<image.height<<std::endl;
+    auto encoded = Image::encode(image, Image::Format::JPEG);
+    ws->sendFrame(encoded.data.data(), encoded.data.size(),WebSocket::FRAME_BINARY);
+
 }
 
 void WebSocketRequestHandler::sendStructureFrame(){

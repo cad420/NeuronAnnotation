@@ -25,7 +25,7 @@ void RequestHandlerFactory::initBlockVolumeRender(){
     std::cout<<"loading render backend..."<<std::endl;
     block_volume_renderer = make_shared<VolumeRenderer>("BlockVolumeRenderer");
 #ifdef _WINDOWS
-    block_volume_renderer->set_volume("D:/mouse_23389_29581_10296_9p2_lod3.h264");
+    block_volume_renderer->set_volume("H:/mouse_28452_21866_4834_9p2_lod0.h264");
 #else
     block_volume_renderer->set_volume("/media/wyz/Workspace/mouse_23389_29581_10296_512_2_lod3/mouse_23389_29581_10296_9p2_lod3.h264");
 #endif
@@ -43,18 +43,12 @@ void RequestHandlerFactory::initBlockVolumeRender(){
     block_volume_renderer->set_transferfunc(default_tf);
 }
 
-void RequestHandlerFactory::initLinesRender(){
-    std::cout<<"loading lines render backend..."<<std::endl;
-    lines_renderer = make_shared<VolumeRenderer>("LinesRenderer");
-}
-
 Poco::Net::HTTPRequestHandler *RequestHandlerFactory::createRequestHandler(
         const Poco::Net::HTTPServerRequest &request) {
     if( !isInited ){
-        //neuronGraphs["test"] = make_shared<NeuronGraph>("./test.swc","test"); //读取本地swc,并且转换成test集合
-        neuronGraphs["test"] = make_shared<NeuronGraph>("test",0);
+        // neuronGraphs["N003"] = make_shared<NeuronGraph>("./N003.swc","N003"); //读取本地swc,并且转换成test集合
+        neuronGraphs["N003"] = make_shared<NeuronGraph>("N003",0);
         initBlockVolumeRender();
-        initLinesRender();
         isInited = true;
     }
     auto &uri = request.getURI();
@@ -75,7 +69,7 @@ Poco::Net::HTTPRequestHandler *RequestHandlerFactory::createRequestHandler(
             n->user_id = ++max_linked_id;
             userList[host.toString()] = n->user_id;
             n->neuron_pool = new NeuronPool();
-            n->neuron_pool->setGraph(neuronGraphs["test"]);
+            n->neuron_pool->setGraph(neuronGraphs["N003"]);
             n->neuron_pool->setGraphPool(&neuronGraphs);
             n->neuron_pool->setUserId(n->user_id);
             neuronPools[n->user_id] = n->neuron_pool;
@@ -87,6 +81,8 @@ Poco::Net::HTTPRequestHandler *RequestHandlerFactory::createRequestHandler(
     if (uri == "/info"){
         std::cout << "create MyHTTPRequestHandler" << std::endl;
         MyHTTPRequestHandler *n = new MyHTTPRequestHandler();
+        n->block_volume_renderer = block_volume_renderer;
+        n->volume_render_lock = volume_render_lock;    
         if( userList.find(host.toString()) != userList.end() ){ //已有
             n->user_id = userList[host.toString()];
             n->neuron_pool = neuronPools[n->user_id];
@@ -94,7 +90,7 @@ Poco::Net::HTTPRequestHandler *RequestHandlerFactory::createRequestHandler(
             n->user_id = ++max_linked_id;
             userList[host.toString()] = n->user_id;
             n->neuron_pool = new NeuronPool();
-            n->neuron_pool->setGraph(neuronGraphs["test"]);
+            n->neuron_pool->setGraph(neuronGraphs["N003"]);
             n->neuron_pool->setGraphPool(&neuronGraphs);
             n->neuron_pool->setUserId(n->user_id);
             neuronPools[n->user_id] = n->neuron_pool;
@@ -113,7 +109,7 @@ Poco::Net::HTTPRequestHandler *RequestHandlerFactory::createRequestHandler(
             n->user_id = ++max_linked_id;
             userList[host.toString()] = n->user_id;
             n->neuron_pool = new NeuronPool();
-            n->neuron_pool->setGraph(neuronGraphs["test"]);
+            n->neuron_pool->setGraph(neuronGraphs["N003"]);
             n->neuron_pool->setGraphPool(&neuronGraphs);
             n->neuron_pool->setUserId(n->user_id);
             neuronPools[n->user_id] = n->neuron_pool;
@@ -132,7 +128,7 @@ Poco::Net::HTTPRequestHandler *RequestHandlerFactory::createRequestHandler(
             n->user_id = ++max_linked_id;
             userList[host.toString()] = n->user_id;
             n->neuron_pool = new NeuronPool();
-            n->neuron_pool->setGraph(neuronGraphs["test"]);
+            n->neuron_pool->setGraph(neuronGraphs["N003"]);
             n->neuron_pool->setGraphPool(&neuronGraphs);
             n->neuron_pool->setUserId(n->user_id);
             neuronPools[n->user_id] = n->neuron_pool;
