@@ -6,12 +6,12 @@ import { UploadOutlined } from '@ant-design/icons';
 import { withSuccess } from "antd/lib/modal/confirm";
 import { linkVertical } from "d3-shape";
 
-const _DOWNLOAD = "http://127.0.0.1:12121/download";
+const _DOWNLOAD = "http://10.76.3.92:12121/download";
 const { Option } = Select;
 const LoadAndSave: React.FC = (props) => {
   const UPLOAD = {
     name: 'file',
-    action: 'http://127.0.0.1:12121/upload',
+    action: 'http://10.76.3.92:12121/upload',
     method: 'post',
     headers: {
       authorization: 'authorization-text',

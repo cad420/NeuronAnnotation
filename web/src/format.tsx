@@ -11,7 +11,7 @@ import Info from "./Info";
 import AddLine from "./AddLine";
 
 const { Header, Footer, Sider, Content } = Layout;
-const _SOCKETLINK = "ws://127.0.0.1:12121/info";
+const _SOCKETLINK = "ws://10.76.3.92:12121/info";
 
 const Format: React.FC = () => {
 
@@ -174,7 +174,8 @@ const Format: React.FC = () => {
     };
 
     const onClickJumpToVex = (record: { index: any; key: React.SetStateAction<number>; })=>{
-        changeData({selectedVertexIndex : record.index});
+        console.log("onClickJumpToVex");
+        changeData({selectedVertexIndex : Number(record.index)});
         setSelectedVertexKey(record.key);
     }
 
@@ -270,7 +271,7 @@ const Format: React.FC = () => {
                 </Header>
                 <Layout>
                 <Sider width={610}>
-                    <div style={{ width: 590, height:490, overflowY:'auto',marginLeft:20 }} >
+                    <div style={{ width: 590, height:600, overflowY:'auto',marginLeft:20 }} >
                     <SrcTable
                         rowSelection={rowSelection}
                         onClickJumpToVex={onClickJumpToVex}
@@ -278,7 +279,6 @@ const Format: React.FC = () => {
                         setData={setData}
                         setSrc={setSrc}
                         initSelectedKey={initSelectedKey}
-                        
                         />
                     </div>
                     <Divider dashed /> 

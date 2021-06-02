@@ -204,6 +204,7 @@ string NeuronGraph::getLinestoJson(NeuronPool * np){
             V.set("index",v->first);
             V.set("key",v_count++);
             V.set("lastEditTime",v->second.timestamp);
+            V.set("checked",v->second.checked);
             Poco::JSON::Array arc;
             for( auto seg = v->second.hash_linked_seg_ids.begin() ; seg != v->second.hash_linked_seg_ids.end() ; seg ++ ){
                 Poco::JSON::Object a;
@@ -433,6 +434,7 @@ long NeuronGraph::selectVertex( int x, int y, NeuronPool *n ){
 
 void NeuronPool::selectLine( int id ){
     m_selected_line_index = id;
+    m_selected_vertex_index = graph->getDefaultSelectedVertexIndex(id);
 }
 
 bool NeuronPool::addVertex(float x, float y, float z){
@@ -539,6 +541,7 @@ bool NeuronGraph::addVertex(Vertex *v){
     }
     list_and_hash_mutex.unlock();
     lines[v->line_id].hash_vertexes[v->id] = *v;
+    graphDrawManager->setRebuildLine(v->line_id);
     if( DataBase::insertSWC(swc,tableName) ) return true;
     return false;
 }
@@ -1042,4 +1045,15 @@ std::array<int,2> NeuronPool::getSelectedVertexXY(){
     glm::vec3 unprojected = glm::unProject(res, model, projection, viewport);
     //逆过程
     return {(int)res.x,(int)res.y};
+}
+
+bool NeuronPool::changeChecked(int v_id, bool checked){
+    return graph->changeChecked(v_id,checked);
+}
+
+bool NeuronGraph::changeChecked(int v_id, bool checked){
+    NeuronSWC *swc = &list_swc[hash_swc_ids[v_id]];
+    Vertex *v = &lines[swc->line_id].hash_vertexes[v_id];
+    v->checked = checked;
+    return true;
 }

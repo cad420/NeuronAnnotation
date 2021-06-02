@@ -65,10 +65,22 @@ void MyHTTPRequestHandler::handleRequest(
                     }
                     if( modify_data.HasMember("selectedVertexIndex") && modify_data["selectedVertexIndex"].IsInt64() ){
                         neuron_pool->selectVertex(modify_data["selectedVertexIndex"].GetInt64());
+                        std::string suc = "switch to ";
+                        suc.append(std::to_string(modify_data["selectedVertexIndex"].GetInt64()));
+                        std::cout << suc << std::endl;
+                        render_ws->sendSuccessFrame(suc);
                         render_ws->sendIamgeFrame();
+                        render_ws->sendStructureFrame();
+                        ws.close();
+                        return;
                     }
                     if( modify_data.HasMember("selectedLineIndex") && modify_data["selectedLineIndex"].IsInt64() ){
                         neuron_pool->selectLine(modify_data["selectedLineIndex"].GetInt64());
+                        render_ws->sendIamgeFrame();
+                    }
+                    if( modify_data.HasMember("checked") && modify_data["checked"].IsBool() ){
+                        int v_id = line_id;
+                        result &= neuron_pool->changeChecked(v_id,modify_data["checked"].GetBool());
                     }
                     if( modify_data.HasMember("name") && modify_data["name"].IsString() ){
                         result &= neuron_pool->changeName(line_id,modify_data["name"].GetString());

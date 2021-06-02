@@ -88,6 +88,7 @@ void UploadRequestHandler::handleRequest(
     int pos = tableName.find(fix);
     tableName = tableName.erase(pos,fix.size());
     if( RequestHandlerFactory::neuronGraphs.find(tableName) != RequestHandlerFactory::neuronGraphs.end() ){
+        render_ws->sendErrorFrame("该工作集合已存在");
         response.setStatus(Poco::Net::HTTPResponse::HTTP_CONFLICT);
         response.send();
     }

@@ -96,8 +96,8 @@ body,
 }
 
 .node circle {
-  fill: #fff;
-  stroke: 	#4682B4;
+  fill: #2CDEBD33;
+  /* stroke: 	#4682B4; */
   stroke-width: 2px;
 }
 
@@ -107,7 +107,8 @@ body,
 
 .link {
   fill: none;
-  stroke: #ccc;
+  stroke: #ddd;
+  /* stroke: #3D7572; */
   stroke-width: 2px;
 }
 

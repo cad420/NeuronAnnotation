@@ -168,33 +168,30 @@ void BlockVolumeRenderer::render_frame() {
     std::shared_ptr<NeuronGraph> g = neuron_pool->getGraph();
     for( auto line : g->graphDrawManager->hash_lineid_vao_ebo ){
         if(neuron_pool->getLineVisible(line.first)){ //只渲染可见
+            glPointSize(1.0);
             glLineWidth(3);
             glBindVertexArray(line.second.first); //绑定vao
             glDrawElements( GL_LINES, 2 * g->graphDrawManager->line_num_of_path[line.first] , GL_UNSIGNED_INT , nullptr );
 
-            // unsigned int vao = g->graphDrawManager->hash_lineid_vertex_vao_ebo[line.first].first; //点位置
-            // glBindVertexArray(vao);
-            // glDrawElements( GL_POINTS, g->graphDrawManager->vector_num_of_path[line.first] , GL_UNSIGNED_INT , nullptr );
+            glPointSize(15.0);
+            unsigned int vao = g->graphDrawManager->hash_lineid_vertex_vao_ebo[line.first].first; //点位置
+            glBindVertexArray(vao);
+            glDrawElements( GL_POINTS, g->graphDrawManager->vector_num_of_path[line.first] , GL_UNSIGNED_INT , nullptr );
         }
     }
-    //高亮选中点
-    // int index = neuron_pool->getSelectedVertexIndex();
-    // float selected[] = {g->list_swc[g->hash_swc_ids[index]].x,g->list_swc[g->hash_swc_ids[index]].y,g->list_swc[g->hash_swc_ids[index]].z,
-    //     1.0f,1.0f,1.0f};
+    // 高亮选中点
+    int index = neuron_pool->getSelectedVertexIndex();
+    std::cout << "selected" << index << std::endl;
+    if(index != -1 ){
+        float selected[] = {g->list_swc[g->hash_swc_ids[index]].x,g->list_swc[g->hash_swc_ids[index]].y,g->list_swc[g->hash_swc_ids[index]].z,
+            1.0f,1.0f,1.0f};
 
-    // glGenBuffers(1,&line_VBO);
-    // glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(selected), selected, GL_STATIC_DRAW);
-    // //pos
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),(void *)0);
-    // glEnableVertexAttribArray(0);
-    // //color
-    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),(void *)(3* sizeof(float)));
-    // glEnableVertexAttribArray(1);
-
-    // glLineWidth(10);
-    // glDrawArrays(GL_POINTS,0,1);
-
+        glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(selected), selected, GL_STATIC_DRAW);
+        glBindVertexArray(line_VAO);
+        glPointSize(10.0);
+        glDrawArrays(GL_POINTS,0,1);
+    }
     glEnable(GL_DEPTH_TEST);
 
     // glDisable(GL_DEPTH_TEST);
@@ -328,27 +325,30 @@ void BlockVolumeRenderer::initGL() {
 }
 
 void BlockVolumeRenderer::InitVaoVbo() {
-//    glGenBuffers(1, &line_VBO);
-//    glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
-//    glBufferStorage(GL_ARRAY_BUFFER, 1024 * sizeof(float), nullptr, GL_DYNAMIC_STORAGE_BIT);
-//    glGenVertexArrays(1, &line_VAO);
-//    glGenBuffers(1, &line_EBO);
-//    glBindVertexArray(line_VAO);
-//    glBindBuffer(GL_ARRAY_BUFFER, line_VBO); //绑定同一个图的vbo
-//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),(void *)0);
-//    glEnableVertexAttribArray(0);
-//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, line_EBO);
-//    glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, 1024 * 2 * sizeof(uint32_t), nullptr, GL_DYNAMIC_STORAGE_BIT);
+    
+    glGenVertexArrays(1, &line_VAO);
+    glGenBuffers(1, &line_VBO);
+    glBindVertexArray(line_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, line_VBO); //绑定同一个图的vbo
 
-    // glNamedBufferSubData(line_VBO, cur_verter_num * sizeof(float) * 3,
-    //                     3 * sizeof(float), a);
-    // if( cur_verter_num > 0 ){
-    //     uint32_t idx[2] = {cur_verter_num - 1, cur_verter_num};
-    //     glNamedBufferSubData(line_EBO,
-    //                         (cur_verter_num - 1) * 2 * sizeof(uint32_t),
-    //                         2 * sizeof(uint32_t), idx);
-    // }
-    // cur_verter_num++;
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),(void *)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),(void *)(3* sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+        screen_quad_vertices={
+            -1.0f,  1.0f,  0.0f, 1.0f,
+            -1.0f, -1.0f,  0.0f, 0.0f,
+            1.0f, -1.0f,  1.0f, 0.0f,
+
+            -1.0f,  1.0f,  0.0f, 1.0f,
+            1.0f, -1.0f,  1.0f, 0.0f,
+            1.0f,  1.0f,  1.0f, 1.0f
+    };
+
 }
 
 

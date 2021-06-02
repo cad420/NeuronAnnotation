@@ -117,10 +117,14 @@ typedef struct Vertex : public BasicObj //记录关键节点和它们之下的�
         line_id = -1;
         hash_linked_seg_ids.clear();
         linked_vertex_ids.clear();
+        checked = false;
     };
     
-    Vertex() {};
+    Vertex() {
+        checked = false;
+    };
 
+    bool checked;
     double x,y,z;
     float radius;
     Type type;
@@ -210,7 +214,7 @@ public:
     bool deleteCurSelectEdges();
     bool deleteCurSelectLines(    );
 
-    
+    bool changeChecked(int v_id, bool checked);
     bool addVertex(Vertex* v);
     bool addSegment(int id, Vertex* v);
     long long addSegment(int id,std::vector<std::array<float,4>> *path); //return final id
@@ -308,6 +312,7 @@ public:
     bool changeVisible(int line_id, bool visible);
     bool changeColor(int line_id, string color);
     bool changeName(int line_id, string name);
+    bool changeChecked(int v_id, bool checked);
     bool hasCamera();
     std::array<int,2> getSelectedVertexXY();
     void setGraph( std::shared_ptr<NeuronGraph> pN){

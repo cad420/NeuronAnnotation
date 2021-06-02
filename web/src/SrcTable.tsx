@@ -1,7 +1,26 @@
-import React, { useEffect, useRef, useState, useContext } from 'react';
-import { Table, Input, Button, Popconfirm, Form, Space, message, Popover } from 'antd';
-import { EditOutlined, SearchOutlined, EyeInvisibleOutlined, EyeOutlined, FileAddOutlined, MenuOutlined } from '@ant-design/icons';
-import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
+import React, {useEffect, useRef, useState, useContext} from 'react';
+import {
+    Table,
+    Input,
+    Button,
+    Popconfirm,
+    Form,
+    Space,
+    message,
+    Popover,
+    Tooltip
+} from 'antd';
+import {
+    EditOutlined,
+    SearchOutlined,
+    EyeInvisibleOutlined,
+    EyeOutlined,
+    CheckCircleOutlined,
+    InfoCircleOutlined,
+    FileAddOutlined,
+    MenuOutlined
+} from '@ant-design/icons';
+import {SortableContainer, SortableElement, SortableHandle} from 'react-sortable-hoc';
 import arrayMove from 'array-move';
 
 import Highlighter from 'react-highlight-words';
@@ -12,7 +31,7 @@ import { subset } from 'd3-array';
 import { autoType } from 'd3-dsv';
 
 const EditableContext = React.createContext<FormInstance<any> | null>(null);
-const _SOCKETLINK = "ws://127.0.0.1:12121/info";
+const _SOCKETLINK = "ws://10.76.3.92:12121/info";
 
 interface Item {
   key: string;
@@ -368,6 +387,45 @@ class SrcTable extends React.Component<EditableTableProps, EditableTableState>{
         })
     }
 
+    changeChecked = ( checked:boolean, row:SubDataType) =>{
+      let self = this;
+      const ws = new WebSocket(_SOCKETLINK);
+      ws.binaryType = "arraybuffer";
+      ws.onopen = () => {
+          console.log("连接成功，准备发送更新数据");
+          ws.send(
+            JSON.stringify({
+                modify : {
+                  index : row.index,
+                  checked : !checked
+                }
+            })
+        );
+      };
+      ws.onmessage = (msg) => {
+          const {data} = msg;
+          ws.close();
+          try {
+              const obj = JSON.parse(data);
+              if (obj.type == "error") {
+                  console.log(obj.message);
+                  message.error(obj.message);
+              } else if (obj.type == "success") {
+                  console.log(obj.message);
+                  message.success(obj.message);
+              } else {
+                  let p = new Promise(resolve => {
+                      resolve(self.props.setData(obj));
+                  }).then(() => {
+                      self.props.initSelectedKey();
+                  })
+              }
+          } catch  {
+              console.log(data);
+          }
+      }
+    }
+
     changeStatus = ( st:boolean,row:DataType ) =>{
       let self = this;
       const ws = new WebSocket(_SOCKETLINK);
@@ -465,14 +523,47 @@ class SrcTable extends React.Component<EditableTableProps, EditableTableState>{
         const expandedRowRender = (data: { sub: readonly any[] | undefined; }) => {
           const columns = [
             { title: 'id', dataIndex: 'index', key: 'index'},
-            { title: '关联节点数', dataIndex: 'linkedVertexNum', key: 'linkedVertexNum', render:(_,record)=>(<p>{record.arc.length}</p>)},
-            { title: '最远关联点距离', dataIndex: 'maxLinedDistance', key: 'maxLinedDistance', render:(_,record)=>{
-                let max = 0;
-                for( let i = 0 ; i < record.arc.length ; i ++ ){
-                    if( record.arc[i].distance > max ) max = record.arc[i].distance;
+            { title: '关联节点数',
+              dataIndex: 'linkedVertexNum',
+              key: 'linkedVertexNum',
+              sorter:(a,b)=>a.arc.length - b.arc.length,
+              filters: [
+                { text: '端点', value: 1 },
+                { text: '中间节点', value: 2 },
+                { text: '分叉点', value: 3}
+              ],
+              onFilter: (value, record) => {
+                if(value != 3){
+                  return record.arc.length == value;
+                }else{
+                  return record.arc.length >= value;
                 }
-                return <p>{max.toFixed(2)}</p>;
-              }
+              },
+              render:(_,record)=>(<p>{record.arc.length}</p>)},
+            { title: '状态', dataIndex: 'checked', key: 'checked',
+            filters:[
+              { text: '已检查', value: true },
+              { text: '未检查', value: false }
+            ],
+            onFilter:(value,record) =>{
+              return value == record.checked;
+            },
+            render:
+            (checked,record)=>
+            (
+                <div>
+                      {/* <a onClick={()=>this.changeStatus(checked,row)}> */}
+                      <Tooltip
+                        title={checked?("已检查"):("未检查")}
+                        color={checked?'blue':'orange'}
+                      >
+                      <a style={{ color: checked?("blue"):("orange")}} onClick={()=>this.changeChecked(checked,record)}>
+                          {checked ? (<CheckCircleOutlined />):(<InfoCircleOutlined />)}
+                      </a>
+                      </Tooltip>
+                  </div>
+            )
+  
               },
             { title: '操作', key:'action', dataIndex: 'action',
             render: ( _, record)=>(

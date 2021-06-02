@@ -4,7 +4,7 @@ import {BulbOutlined} from '@ant-design/icons'
 import axios from 'axios';
 
 
-const _SOCKETLINK = "ws://localhost:12121/info";
+const _SOCKETLINK = "ws://10.76.3.92:12121/info";
 class RenderSelecter extends React.Component {
     constructor(props){
         super(props)

@@ -363,7 +363,7 @@ class FirstPersonConroller {
   };
 
   move = () => {
-
+    
     const position = new Vector3(
       this.position[0],
       this.position[1],

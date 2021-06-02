@@ -23,16 +23,16 @@ class Info extends React.Component {
         return (
             <div>
                 <Row gutter={16}>
-                <Col span={12}>
+                <Col span={6}>
                     <Statistic title="总顶点数" value={graph ? graph.sub.length : 0} />
                 </Col>
-                <Col span={12}>
+                <Col span={6}>
                     <Statistic title="总距离" value={(totalLength/2).toFixed(2)} precision={2} />
                 </Col>
-                <Col span={12}>
+                <Col span={6}>
                     <Statistic title="分支点数" value={forkCount} />
                 </Col>
-                <Col span={12}>
+                <Col span={6}>
                     <Statistic title="端点数" value={leafCount} />
                 </Col>
             </Row>

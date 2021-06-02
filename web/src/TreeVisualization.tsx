@@ -1,42 +1,17 @@
-import {Tabs, Radio, Space, Tooltip, Card, InputNumber, message, Button, Row, Col, Collapse} from 'antd';
+import {Tabs, Radio, Space, Tooltip, Card, InputNumber, message, Button, Row, Col, Collapse, Menu, Dropdown, Checkbox} from 'antd';
 import React from "react";
-import * as lw from "@euphrasiologist/lwphylo";
 import * as d3 from "d3";
-import { subset } from 'd3';
+import $ from "jquery";
 const { Panel } = Collapse;
-const {TabPane} = Tabs;
-const w = 1024;
-const h = 200;
-const scaleRect = 15;
-const xScaleRect = d3
-    .scaleLinear()
-    .domain([
-        -scaleRect * 0.03,
-        scaleRect * 0.5
-    ])
-    .range([0, w]);
-const yScaleRect = d3
-    .scaleLinear()
-    .domain([
-        -scaleRect * 0.1,
-        scaleRect * 0.5
-    ])
-    .range([h,0]);
-const scaleUnroot = 3.5;
-const xScaleUnroot = d3
-    .scaleLinear()
-    .domain([
-        -scaleUnroot,
-        scaleUnroot
-    ])
-    .range([0, w]);
-const yScaleUnroot = d3
-    .scaleLinear()
-    .domain([
-        -scaleUnroot,
-        scaleUnroot
-    ])
-    .range([h, 0]);
+const _SOCKETLINK = "ws://10.76.3.92:12121/info";
+
+
+const color={
+    CHECKED_FORK: "#86DBCB",
+    CHECKED_LEAF: "#0992A8",
+    CHECKED_FORMAL:"#72DBD4",
+    UNCHECKED:"#0B2736"
+};
 
 //数据部分
 interface DataType {
@@ -61,7 +36,7 @@ interface ArcType{
     headVex: number;
     distance: number;
 }
-
+  
 const getTreeData = ( graph:DataType, root:number ) =>{
     //console.log(graph);
     var maxLength = 0;
@@ -84,7 +59,7 @@ const getTreeData = ( graph:DataType, root:number ) =>{
     const dfs = (graph:DataType,key:number) =>{
         if( !graph.sub[key] ) return "";
         let parsedStr = "";
-        console.log("visite"+key);
+        // console.log("visite"+key);
         visitedArray[key] = true;
         for( let i = 0 ; i < graph.sub[key].arc.length ; i ++ ){
             if( graph.sub[key].arc[i].headVex == graph.sub[key].index ){
@@ -109,8 +84,8 @@ const getTreeData = ( graph:DataType, root:number ) =>{
                 }
             }
         }
-        if( parsedStr != "" ) parsedStr = `, "children":[ ` + parsedStr + `]`
-        return `{"name":"` + graph.sub[key].index + `"` + parsedStr + "}";
+        if( parsedStr != "" ) parsedStr = `, "children":[ ` + parsedStr + `]`;
+        return `{"name":"` + graph.sub[key].index + `", "checked":` + graph.sub[key].checked + parsedStr + "}";
     }
     // console.log(root,dicMap.get(root))
     let x = dfs(graph,root);
@@ -126,7 +101,10 @@ class TreeVisualization extends React.Component {
             preData: {},
             width: 500,
             height: 300,
-            depth:180
+            depth:180,
+            menuIndex:-1,
+            menuVisible: false,
+            checked:false,
         };
     }
 
@@ -154,12 +132,9 @@ class TreeVisualization extends React.Component {
                 this.TreePlot();
             })            
         }
-        // if(this.props.data.graphs[this.props.selectedMapKey].sub[this.props.selectedVertexKey]){
-        //     this.RectPhyloPlot();
-        //     this.UnrootedPhyloPlot();
-        // }
     }
 
+    
     TreePlot = () => {
         const self = this;
         d3
@@ -175,7 +150,7 @@ class TreeVisualization extends React.Component {
 
 
             // Set the dimensions and margins of the diagram
-            var margin = ({top: 50, right: 50, bottom: 50, left: 50});
+            var margin = ({top: 10, right: 50, bottom: 10, left: 50});
 
             self.setState({width:1200 - margin.left - margin.right}) ;
             self.setState({height:300 - margin.top - margin.bottom});
@@ -187,6 +162,18 @@ class TreeVisualization extends React.Component {
             .attr("transform", "translate("
                 + margin.left + "," + margin.top + ")");
 
+            const fontStyle = "15px -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+            var div = d3.select("body").append("div")
+            .attr("class", "svg-tooltip")
+            .style("visibility", "hidden")
+            .style("position", "absolute")
+            .style("z-index", "10")
+            .style("background", "#fff")
+            .text("")
+            .style("padding", "3px")
+            .style("border", "0.5px solid black")
+            .style("font", fontStyle);
+            // .style("opacity", 1e-6)
             // append the svg object to the body of the page
             // appends a 'group' element to 'svg'
             // moves the 'group' element to the top left margin
@@ -219,6 +206,39 @@ class TreeVisualization extends React.Component {
             }
             }
 
+            function mouseover() {
+                div.transition()
+                  .duration(300)
+                  .style("visibility", "visible");
+                //   .style("opacity", 1);
+              }
+            
+              function mousemove(event, data) {
+                var d = data;
+                div
+                .html(function(){
+                   if( !d.data.children || (d.data.name == root.data.name && d.data.children.length == 1) ){
+                        return "LEAF" + ":  " + d.data.name;
+                   }else if(d.data.children.length == 1){
+                        return "NORMAL" + ":  " + d.data.name;
+                   }else
+                        return "FORK" + ":  " + d.data.name;
+                })
+                .style("left", (event.pageX+10) + "px")
+                .style("top", (event.pageY-10) + "px");
+            }
+            
+            function mouseout() {
+                div.transition()
+                  .duration(300)
+                  .style("visibility", "hidden");
+                
+                
+            //     div.transition()
+            //       .duration(300)
+            //       .style("opacity", 1e-6);
+              }
+
             function update(source) {
 
             // Assigns the x and y position for the nodes
@@ -231,7 +251,6 @@ class TreeVisualization extends React.Component {
             // Normalize for fixed-depth.
                 nodes.forEach(function (d) {
                     d.y = d.depth * 180;
-                    console.log(self.state.depth);
                     d.y = d.depth * self.state.depth;
                     if (d.y > self.state.width) {
                         self.setState({width:d.y + 100});
@@ -246,24 +265,85 @@ class TreeVisualization extends React.Component {
             var node = svg.selectAll('g.node')
                 .data(nodes, function(d) {return d.id || (d.id = ++i); });
 
+            const onClickJump = (e,d) => {
+                self.setState({menuVisible:false});
+                div.transition()
+                .duration(300)
+                .style("visibility", "hidden");
+                self.props.data.graphs[self.props.selectedMapKey].sub.forEach( function(v,i) {
+                    console.log(v.index);
+                    console.log(d.id);
+                    if( v.index == d.data.name ){
+                        let record = {
+                            index :d.data.name,
+                            key:i
+                        }
+                        self.props.onClickJumpToVex(record);
+                    }
+                })
+                
+            }
+            var menu = (e,i) =>{
+                console.log(e);
+                console.log(i);
+                self.setState({menuIndex:i.data.name,menuVisible:true,checked:i.data.checked});
+            }
+    
             // Enter any new modes at the parent's previous position.
             var nodeEnter = node.enter().append('g')
                 .attr('class', 'node')
                 .attr("transform", function(d) {
                     return "translate(" + source.y0 + "," + source.x0 + ")";
                 })
-                .on('click', click);
+                .on('click', click)
+                .on('dblclick',onClickJump)
+                .on("mouseover", mouseover)
+                .on("mousemove", function(event, d){
+                mousemove(event, d);})
+                .on("mouseout", mouseout)
+                .on("contextmenu", menu)
 
             // Add Circle for the nodes
             nodeEnter.append('circle')
                 .attr('class', 'node')
                 .attr('r', 1e-6)
-                .attr("stroke","black")
+                .attr("stroke", function(d){
+                    if (d.data.checked){
+                        if( !d.data.children || (d.data.name == root.data.name && d.data.children.length == 1) ){
+                            return color.CHECKED_LEAF;
+                        }
+                        else if(d.data.children.length == 1 ){
+                            return color.CHECKED_FORMAL;
+                        }
+                        else{
+                            return color.CHECKED_FORK;
+                        }
+                    }
+                    else{
+                        return color.UNCHECKED;
+                    }
+                })
                 .attr("stroke-width",2)
-                .style("fill", function(d) {
-                    return d._children ? "#B0C4DE" : "#fff";
+                .style("fill", function(d){
+                    if (d.data.checked){
+                        if( !d.data.children || (d.data.name == root.data.name && d.data.children.length == 1) ){
+                            return color.CHECKED_LEAF;
+                        }
+                        else if(d.data.children.length == 1 ){
+                            return color.CHECKED_FORMAL;
+                        }
+                        else {
+                            return color.CHECKED_FORK;
+                        }
+                    }
+                    else{
+                        return color.UNCHECKED;
+                    }
                 });
-
+                
+                // function(d) {
+                //     return d._children ? "#B0C4DE" : "#fff";
+                // });
 
 
             // Add labels for the nodes
@@ -283,7 +363,7 @@ class TreeVisualization extends React.Component {
                     else if(d.data.name == self.props.data.selectedVertexIndex)
                     return "Selected:" + d.data.name;
                     else
-                    return "Index:" + d.data.name;
+                    return "";
                     });
 
             // UPDATE
@@ -299,9 +379,20 @@ class TreeVisualization extends React.Component {
             // Update the node attributes and style
             nodeUpdate.select('circle.node')
                 .attr('r', 7)
-                .style("fill", function(d) {
-                    return d._children ? "#B0C4DE" : "#ffffff";
+                .style("fill",function(d){
+                    if( !d.data.children || (d.data.name == root.data.name && d.data.children.length == 1) ){
+                        return color.CHECKED_LEAF;
+                    }
+                    else if(d.data.children.length == 1 ){
+                        return color.CHECKED_FORMAL;
+                    }
+                    else{
+                        return color.CHECKED_FORK;
+                    }
                 })
+                // .style("fill", function(d) {
+                //     return d._children ? "#B0C4DE" : "#ffffff";
+                // })
                 .attr('cursor', 'pointer');
 
 
@@ -367,8 +458,8 @@ class TreeVisualization extends React.Component {
             }
 
             // Toggle children on click.
-            function click(i,d) {
-                // console.log(d);
+            function click(e,d) {
+                
                 if (d.children) {
                     d._children = d.children;
                     d.children = null;
@@ -378,8 +469,24 @@ class TreeVisualization extends React.Component {
                 }
                 update(d);
             }
+            } 
+            const expand = (d) => {   
+                var children = (d.children)?d.children:d._children;
+                if (d._children) {        
+                    d.children = d._children;
+                    d._children = null;       
+                }
+                if(children)
+                  children.forEach(expand);
             }
+
+            const expendAll = () => {
+                expand(root);
+                update(root);
+            }
+            expendAll();
         }
+
     }
 
     onChange = (value) => {
@@ -397,7 +504,83 @@ class TreeVisualization extends React.Component {
     }
 
 
+    // 事件监听方式添加事件绑定
+    
+    handleMenuClick = ( event ) => {
+        
+        let key = event.key;
+        console.log(key);
+        let self = this;
+        if( key == '1' ){
+            console.log(self.state.menuIndex);
+            self.props.data.graphs[self.props.selectedMapKey].sub.forEach( function(v,i) {
+            if( v.index == self.state.menuIndex ){
+                let record = {
+                    index :Number(self.state.menuIndex),
+                    key:i
+                }
+                self.props.onClickJumpToVex(record);
+            }
+            })
+        }else if( key == '2' ){
+            let self = this;
+            const ws = new WebSocket(_SOCKETLINK);
+            ws.onopen = () => {
+                console.log("连接成功，准备发送更新数据");
+                console.log("self.state.menuIndex"+self.state.menuIndex);
+                ws.send(
+                    JSON.stringify({
+                        modify : {
+                        index : Number(self.state.menuIndex),
+                        checked : !self.state.checked
+                        }
+                    })
+                );
+                console.log(                    JSON.stringify({
+                    modify : {
+                    index : Number(self.state.menuIndex),
+                    checked : !self.state.checked
+                    }
+                }))
+            };
+            ws.onmessage = (msg) => {
+                const {data} = msg;
+                ws.close();
+                try {
+                    const obj = JSON.parse(data);
+                    if (obj.type == "error") {
+                        console.log(obj.message);
+                        message.error(obj.message);
+                    } else if (obj.type == "success") {
+                        console.log(obj.message);
+                        message.success(obj.message);
+                    } else {
+                        let p = new Promise(resolve => {
+                            resolve(self.props.setData(obj));
+                        }).then(() => {
+                            self.props.initSelectedKey();
+                        })
+                    }
+                } catch  {
+                    console.log(data);
+                }
+            }
+        }else if( key == '3' ){
+            this.onChange(this.state.menuIndex);
+        }
+        this.setState({menuVisible:false});
+    }
+
     render() {
+
+        const self = this;
+        const menu = (
+            <Menu onClick={self.handleMenuClick}>
+              <Menu.Item key="1">跳转</Menu.Item>
+              <Menu.Item key="2">修改检查状态</Menu.Item>
+              <Menu.Item key="3">以该顶点为根重置</Menu.Item>
+            </Menu>
+          );
         return (
             <>
             <div>
@@ -408,11 +591,13 @@ class TreeVisualization extends React.Component {
                     选择端点Index： <InputNumber defaultValue={this.props.data.selectedVertexIndex} onChange={(v)=>this.onChange(v)} />
                     </Col>
                 </Row>
-                <div className="Rectangle" id="Rectangle" ref="Rectangle">
+                <Dropdown overlay={menu} trigger={['contextMenu']} visible={self.state.menuVisible}>
+                <div className="Rectangle" id="Rectangle" ref="Rectangle" onClick={()=>self.setState({menuVisible:false})}>
                     <div className="wuliwala">
                             <svg></svg>
                     </div>
                 </div>
+                </Dropdown>
                 </Panel>
             </Collapse>
             </div>

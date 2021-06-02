@@ -22,11 +22,11 @@ const Image: React.FC = (props) => {
   const img = useRef<HTMLImageElement>(null);
   useEffect(() => {
     let loop = 0;
-    let lastPosition = [7024, 5408, 2286];
+    let lastPosition = [8617, 8500, 2200];
     let lastTarget = [0, 0, -1];
     let lastUp = [0, 1, 0];
     let lastZoom = 20.0;
-    const ws = new WebSocket("ws://127.0.0.1:12121/render");
+    const ws = new WebSocket("ws://10.76.3.92:12121/render");
     ws.binaryType = "arraybuffer";
     ws.onopen = () => {
       console.log("连接渲染服务成功");
@@ -59,6 +59,7 @@ const Image: React.FC = (props) => {
           })
         );
       };
+      
       ws.send(
         JSON.stringify({
           camera: {
