@@ -183,7 +183,10 @@ void BlockVolumeRenderer::render_frame() {
     int index = neuron_pool->getSelectedVertexIndex();
     std::cout << "selected" << index << std::endl;
     if(index != -1 ){
-        float selected[] = {g->list_swc[g->hash_swc_ids[index]].x,g->list_swc[g->hash_swc_ids[index]].y,g->list_swc[g->hash_swc_ids[index]].z,
+        float selected[] = {
+                (float)g->list_swc[g->hash_swc_ids[index]].x,
+                (float)g->list_swc[g->hash_swc_ids[index]].y,
+                (float)g->list_swc[g->hash_swc_ids[index]].z,
             1.0f,1.0f,1.0f};
 
         glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
@@ -271,7 +274,7 @@ void BlockVolumeRenderer::initGL() {
             (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress(
                     "eglGetPlatformDisplayEXT");
 
-    auto m_egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT,
+    m_egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT,
                                                   egl_devices[0], nullptr);
     EGLCheck("eglGetDisplay");
 
@@ -289,7 +292,7 @@ void BlockVolumeRenderer::initGL() {
     const EGLint pbuffer_attribs[] = {
             EGL_WIDTH, (EGLint)window_width, EGL_HEIGHT, (EGLint)window_height, EGL_NONE,
     };
-    EGLSurface egl_surface =
+    egl_surface =
             eglCreatePbufferSurface(m_egl_display, egl_config, pbuffer_attribs);
     EGLCheck("eglCreatePbufferSurface");
 
@@ -303,7 +306,7 @@ void BlockVolumeRenderer::initGL() {
                                     EGL_CONTEXT_OPENGL_PROFILE_MASK,
                                     EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
                                     EGL_NONE};
-    EGLContext egl_context = eglCreateContext(m_egl_display, egl_config,
+    egl_context = eglCreateContext(m_egl_display, egl_config,
                                               EGL_NO_CONTEXT, context_attri);
     EGLCheck("eglCreateContext");
 
@@ -477,11 +480,11 @@ void BlockVolumeRenderer::createGLSampler() {
     GL_EXPR(glSamplerParameterfv(gl_sampler,GL_TEXTURE_BORDER_COLOR,color));
 }
 void BlockVolumeRenderer::createGLShader() {
-    raycasting_shader=std::make_unique<sv::Shader>("../../../src/Render/Shaders/block_raycast_v.glsl",
-                                                   "../../../src/Render/Shaders/block_raycast_f.glsl");
+    raycasting_shader=std::make_unique<sv::Shader>("../../src/Render/Shaders/block_raycast_v.glsl",
+                                                   "../../src/Render/Shaders/block_raycast_f.glsl");
 //    raycasting_shader->setShader(shader::mix_block_raycast_v,shader::mix_block_raycast_f,nullptr);
-    line_shader=std::make_unique<sv::Shader>("../../../src/Render/Shaders/markedpath_v.glsl",
-                                                   "../../../src/Render/Shaders/markedpath_f.glsl");
+    line_shader=std::make_unique<sv::Shader>("../../src/Render/Shaders/markedpath_v.glsl",
+                                                   "../../src/Render/Shaders/markedpath_f.glsl");
 }
 
 void BlockVolumeRenderer::createCUgraphics() {
@@ -875,14 +878,22 @@ void BlockVolumeRenderer::set_neuronpool(NeuronPool *np) {
 
 void BlockVolumeRenderer::enter_gl(){
     //call every time start to use opengl for this thread
+#ifdef _WINDOWS
     if(!wglMakeCurrent(window_handle, gl_context)){
         throw std::runtime_error("Failed to activate OpenGL 4.6 rendering context.");
     }
+#else
+    eglMakeCurrent(m_egl_display, egl_surface, egl_surface, egl_context);
+#endif
 }
 
 void BlockVolumeRenderer::exit_gl(){
     GL_CHECK
+#ifdef _WINDOWS
     //call every time stop using opengl for this thread
     //https://www.khronos.org/opengl/wiki/OpenGL_and_multithreading
     wglMakeCurrent(NULL, NULL);
+#else
+    eglMakeCurrent(m_egl_display,EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+#endif
 }

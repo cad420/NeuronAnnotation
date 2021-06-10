@@ -6,6 +6,9 @@
 #define NEURONANNOTATION_IMAGE_H
 #include <cstdint>
 #include <vector>
+#include <array>
+#include <cassert>
+#include <stdexcept>
 class Image{
 public:
     Image()=default;

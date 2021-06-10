@@ -25,6 +25,7 @@ if(WIN32)
 elseif(UNIX)
     find_package(OpenGL REQUIRED COMPONENTS OpenGL EGL)
     list(
+            APPEND
         SERVER_SRCS
         main.cpp
         NeuronAnnotaterApplication.cpp

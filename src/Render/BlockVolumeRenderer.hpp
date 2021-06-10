@@ -177,7 +177,9 @@ public:
     HDC window_handle;
     HGLRC gl_context;
 #elif LINUX
-
+    EGLDisplay m_egl_display;
+    EGLSurface egl_surface;
+    EGLContext egl_context
 #endif
 
 private:

@@ -11,7 +11,7 @@ import Info from "./Info";
 import AddLine from "./AddLine";
 
 const { Header, Footer, Sider, Content } = Layout;
-const _SOCKETLINK = "ws://10.76.3.92:12121/info";
+const _SOCKETLINK = "ws://127.0.0.1:12121/info";
 
 const Format: React.FC = () => {
 

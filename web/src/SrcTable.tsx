@@ -31,7 +31,7 @@ import { subset } from 'd3-array';
 import { autoType } from 'd3-dsv';
 
 const EditableContext = React.createContext<FormInstance<any> | null>(null);
-const _SOCKETLINK = "ws://10.76.3.92:12121/info";
+const _SOCKETLINK = "ws://127.0.0.1:12121/info";
 
 interface Item {
   key: string;

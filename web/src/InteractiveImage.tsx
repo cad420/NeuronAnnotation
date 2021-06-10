@@ -26,7 +26,7 @@ const Image: React.FC = (props) => {
     let lastTarget = [0, 0, -1];
     let lastUp = [0, 1, 0];
     let lastZoom = 20.0;
-    const ws = new WebSocket("ws://10.76.3.92:12121/render");
+    const ws = new WebSocket("ws://127.0.0.1:12121/render");
     ws.binaryType = "arraybuffer";
     ws.onopen = () => {
       console.log("连接渲染服务成功");
