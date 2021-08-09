@@ -7,7 +7,7 @@ import axios from 'axios';
 
 const _SOCKETLINK = "ws://127.0.0.1:12121/info";
 class AddLine extends React.Component {
-    constructor(props){
+    constructor(props: any){
         super(props)
     }
 
