@@ -1,5 +1,5 @@
 import React from "react";
-import { Radio, Tooltip } from 'antd';
+import { Radio, RadioChangeEvent, Tooltip } from 'antd';
 import {
     DragOutlined,
     ScissorOutlined,
@@ -7,11 +7,20 @@ import {
     RadiusSettingOutlined,
     DeleteOutlined,
   } from '@ant-design/icons';
+import { Data } from "./format";
 
 const _SOCKETLINK = "ws://127.0.0.1:12121/info";
 
-class ToolsHeader extends React.Component {
-    constructor(props){
+interface Props {
+    data: Data
+}
+
+interface State {
+    selectedTool: any
+}
+
+class ToolsHeader extends React.Component<Props, State> {
+    constructor(props: Props){
         super(props);
         this.state = {
             selectedTool : this.props.data.selectedTool
@@ -21,9 +30,9 @@ class ToolsHeader extends React.Component {
     render(){
         const {selectedTool} = this.state;
 
-        const handleToolsChange = (e) => {
+        const handleToolsChange = (e: RadioChangeEvent) => {
             const ws = new WebSocket(_SOCKETLINK);
-            this.setState({selectedTool:e.target.value});
+            this.setState({selectedTool: e.target.value});
             ws.binaryType = "arraybuffer";
             ws.onopen = () => {
                 console.log("连接成功，准备发送更新数据");
