@@ -5,13 +5,47 @@ import SrcTable from "./SrcTable";
 import LoadAndSave from "./LoadAndSave";
 import ToolsHeader from "./ToolsHeader";
 import RenderSelecter from "./RenderSelecter";
-import TreeVisualization from "./TreeVisualization";
+import SubwayVis from "./subwayVis";
 import "./style.css";
 import Info from "./Info";
 import AddLine from "./AddLine";
+import { NodesVisitor } from "typescript";
 
 const { Header, Footer, Sider, Content } = Layout;
 const _SOCKETLINK = "ws://127.0.0.1:12121/info";
+
+
+export interface Data {
+    type: string,
+    graphs: Array<Graph>,
+    selectedVertexIndex: number,
+    selectedMapIndex: number,
+    selectedTool: number
+};
+
+export interface Graph {
+    sub: Array<Node>,
+    color: string,
+    name: string,
+    index: number,
+    status: boolean,
+    key: number
+}
+
+interface Node {
+    key: number,
+    index: number,
+    lastEditTime: string,
+    arc: Array<arc>,
+    checked: boolean,
+    name: string
+}
+
+interface arc {
+    headVex: number,
+    tailVex: number,
+    distance: number
+}
 
 const Format: React.FC = () => {
 
@@ -22,126 +56,126 @@ const Format: React.FC = () => {
             "graphs":[
                 {
                 "sub":[
-                {   "key":0,
-                    "index":1,
-                    "lastEditTime":"2021-11-10 20:20:20",
-                    "arc":[
-                        {
-                            "headVex" : 1,
-                            "tailVex" : 3,
-                            "distance" : 10.332
-                        },
-                        {
-                            "headVex" : 1,
-                            "tailVex" : 4,
-                            "distance" : 7.25
-                        },
-                        {
-                            "headVex" : 1,
-                            "tailVex" : 7,
-                            "distance" : 8
-                        },
-                    ]
-                },
-                {   "key":1,
-                    "index":3,
-                    "lastEditTime":"2021-11-10 20:20:20",
-                    "arc":[
-                        {
-                            "headVex" : 1,
-                            "tailVex" : 3,
-                            "distance" : 10.332
-                        },
-                        {                        
-                            "headVex" : 3,
-                            "tailVex" : 8,
-                            "distance": 11,
-                        },
-                        {
-                            "headVex" : 3,
-                            "tailVex" : 9,
-                            "distance": 12,
-                        }
-                    ]
-                },
-                {
-                    "key":2,
-                    "index":4,
-                    "lastEditTime":"2021-11-10 20:20:21",
-                    "arc":[
-                        {
-                            "headVex" : 1,
-                            "tailVex" : 4,
-                            "distance" : 7.25
-                        },
-                        {
-                            "headVex" : 4,
-                            "tailVex" : 5,
-                            "distance" : 12
-                        }
-                    ]
-                },
-                {
-                    "key":3,
-                    "index":5,
-                    "lastEditTime":"2021-4-29 20:00:21",
-                    "arc":[
-                        {
-                            "headVex" : 4,
-                            "tailVex" : 5,
-                            "distance" : 12
-                        },
-                        {
-                            "headVex" : 5,
-                            "tailVex" : 6,
-                            "distance" : 7
-                        }
-                    ]
-                },{
-                    "key":4,
-                    "index":6,
-                    "lastEditTime":"2021-4-29 08:00:54",
-                    "arc":[
-                        {
-                            "headVex" : 5,
-                            "tailVex" : 6,
-                            "distance" : 7
-                        }
-                    ]
-                },{
-                    "key":5,
-                    "index":7,
-                    "lastEditTime":"2021-4-29 08:00:54",
-                    "arc":[
-                        {
-                            "headVex":7,
-                            "tailVex":1,
-                            "distance":8
-                        }
-                    ]
-                },{
-                    "key":6,
-                    "index":8,
-                    "lastEditTime":"2021-4-29 08:00:54",
-                    "arc":[
-                        {
-                            "headVex":3,
-                            "tailVex":8,
-                            "distance":11
-                        }
-                    ]
-                },{
-                    "key":7,
-                    "index":9,
-                    "lastEditTime":"2021-4-29 08:00:54",
-                    "arc":[
-                        {
-                            "headVex":3,
-                            "tailVex":9,
-                            "distance":17
-                        }
-                    ]
-                }
+                // {   "key":0,
+                //     "index":1,
+                //     "lastEditTime":"2021-11-10 20:20:20",
+                //     "arc":[
+                //         {
+                //             "headVex" : 1,
+                //             "tailVex" : 3,
+                //             "distance" : 10.332
+                //         },
+                //         {
+                //             "headVex" : 1,
+                //             "tailVex" : 4,
+                //             "distance" : 7.25
+                //         },
+                //         {
+                //             "headVex" : 1,
+                //             "tailVex" : 7,
+                //             "distance" : 8
+                //         },
+                //     ]
+                // },
+                // {   "key":1,
+                //     "index":3,
+                //     "lastEditTime":"2021-11-10 20:20:20",
+                //     "arc":[
+                //         {
+                //             "headVex" : 1,
+                //             "tailVex" : 3,
+                //             "distance" : 10.332
+                //         },
+                //         {                        
+                //             "headVex" : 3,
+                //             "tailVex" : 8,
+                //             "distance": 11,
+                //         },
+                //         {
+                //             "headVex" : 3,
+                //             "tailVex" : 9,
+                //             "distance": 12,
+                //         }
+                //     ]
+                // },
+                // {
+                //     "key":2,
+                //     "index":4,
+                //     "lastEditTime":"2021-11-10 20:20:21",
+                //     "arc":[
+                //         {
+                //             "headVex" : 1,
+                //             "tailVex" : 4,
+                //             "distance" : 7.25
+                //         },
+                //         {
+                //             "headVex" : 4,
+                //             "tailVex" : 5,
+                //             "distance" : 12
+                //         }
+                //     ]
+                // },
+                // {
+                //     "key":3,
+                //     "index":5,
+                //     "lastEditTime":"2021-4-29 20:00:21",
+                //     "arc":[
+                //         {
+                //             "headVex" : 4,
+                //             "tailVex" : 5,
+                //             "distance" : 12
+                //         },
+                //         {
+                //             "headVex" : 5,
+                //             "tailVex" : 6,
+                //             "distance" : 7
+                //         }
+                //     ]
+                // },{
+                //     "key":4,
+                //     "index":6,
+                //     "lastEditTime":"2021-4-29 08:00:54",
+                //     "arc":[
+                //         {
+                //             "headVex" : 5,
+                //             "tailVex" : 6,
+                //             "distance" : 7
+                //         }
+                //     ]
+                // },{
+                //     "key":5,
+                //     "index":7,
+                //     "lastEditTime":"2021-4-29 08:00:54",
+                //     "arc":[
+                //         {
+                //             "headVex":7,
+                //             "tailVex":1,
+                //             "distance":8
+                //         }
+                //     ]
+                // },{
+                //     "key":6,
+                //     "index":8,
+                //     "lastEditTime":"2021-4-29 08:00:54",
+                //     "arc":[
+                //         {
+                //             "headVex":3,
+                //             "tailVex":8,
+                //             "distance":11
+                //         }
+                //     ]
+                // },{
+                //     "key":7,
+                //     "index":9,
+                //     "lastEditTime":"2021-4-29 08:00:54",
+                //     "arc":[
+                //         {
+                //             "headVex":3,
+                //             "tailVex":9,
+                //             "distance":17
+                //         }
+                //     ]
+                // }
                 ],
                 "color":"#cc00aa",
                 "name":"路径1",
@@ -158,6 +192,7 @@ const Format: React.FC = () => {
     const [selectedMapKey, setSelectedMapKey] = useState(0);
     const [selectedVertexKey, setSelectedVertexKey] = useState(0);
     const [selectedTool,setSelectecTool] = useState(1);
+
     const handleToolsChange = (e: { target: { value: React.SetStateAction<number>; }; })=>{
         console.log("handleToolsChange",e.target.value);
         setSelectecTool(e.target.value);
@@ -173,10 +208,11 @@ const Format: React.FC = () => {
         },
     };
 
-    const onClickJumpToVex = (record: { index: any; key: React.SetStateAction<number>; })=>{
+    /* index为服务端标注点的索引, key为sub数组中的索引 */
+    const onClickJumpToVex = ({index, key}: { index: any; key: React.SetStateAction<number> })=>{
         console.log("onClickJumpToVex");
-        changeData({selectedVertexIndex : Number(record.index)});
-        setSelectedVertexKey(record.key);
+        changeData({selectedVertexIndex : Number(index)});
+        setSelectedVertexKey(key);
     }
 
     const initSelectedKey = () => {
@@ -189,11 +225,11 @@ const Format: React.FC = () => {
         }
     }
 
-    const changeTable = (table) =>{
+    const changeTable = (table: any) =>{
         changeData({selectedTableName : table});
     }
 
-    const changeData = (_data) => {
+    const changeData = (_data: any) => {
         if(_data && data){
             console.log("changedata:",data)
             setData({...data,..._data});
@@ -212,7 +248,7 @@ const Format: React.FC = () => {
             ws.onerror = () =>{
                 console.log("连接渲染服务器出错！");
                 message.error("连接渲染服务器出错！");
-            }
+            }  
             ws.onmessage = (msg) => {
                 const { data } = msg;
                 if (typeof msg.data === "object") {
@@ -233,7 +269,7 @@ const Format: React.FC = () => {
                     message.success( obj.message );
                   }else{
                     console.log(obj);
-                    let p = new Promise(resolve =>{
+                    new Promise(resolve =>{
                       resolve(setData(obj));
                     }).then(()=>{
                       initSelectedKey();
@@ -247,6 +283,7 @@ const Format: React.FC = () => {
             };
         }
     }
+
     return (
             <div>
                 <Layout>
@@ -305,11 +342,13 @@ const Format: React.FC = () => {
                 </Layout>
                 <Footer>
                     <Col span={24}>
-                        <TreeVisualization
+                        <SubwayVis
                             data={data}
                             onClickJumpToVex={onClickJumpToVex}
                             selectedMapKey={selectedMapKey}
                             selectedVertexKey={selectedVertexKey}
+                            initSelectedKey={initSelectedKey}
+                            setData={setData}
                         />
                     </Col>
                 </Footer>

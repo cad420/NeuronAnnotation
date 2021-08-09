@@ -46,7 +46,6 @@ body,
   /* margin-top: 20px; */
   line-height: 30px;
   background: #ffffff;
-  width: 500px;
 }
 
 [data-theme="dark"] .ant-layout-sider {
@@ -64,7 +63,7 @@ body,
 .ant-layout-content {
   /* margin-top: 20px; */
   min-height: 120px;
-  margin-left: 100px;
+  /* margin-left: 100px; */
   line-height: 20px;
   color: #fff;
   background: rgb(255, 255, 255);
@@ -112,11 +111,42 @@ body,
   stroke-width: 2px;
 }
 
-.wuliwala{
-  height: 500;
+.svg-wrapper{
   overflow-y: auto;
-  width: 500;
   overflow-x: auto;
+  width: 100%;
+}
+
+.svg-wrapper .subway {
+  width: 100%;
+}
+
+body {
+  user-select: none;
+}
+
+.row {
+  position: relative;
+}
+
+.row .scale {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  height: 5px;
+  background-color: #ffffff;
+  border: 2px solid #000000;
+  border-top: 0px;
+}
+
+.row .scaleText {
+  position: absolute;
+  bottom: 50%;
+  right: 20px;
+  height: 14px;
+  line-height: 14px;
+  font-size: 10px;
+  text-align: center;
 }
 
 /* > .code-box-demo > .ant-layout + .ant-layout {
