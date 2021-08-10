@@ -9,7 +9,6 @@ import SubwayVis from "./subwayVis";
 import "./style.css";
 import Info from "./Info";
 import AddLine from "./AddLine";
-import { NodesVisitor } from "typescript";
 
 const { Header, Footer, Sider, Content } = Layout;
 const _SOCKETLINK = "ws://127.0.0.1:12121/info";
