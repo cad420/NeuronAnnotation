@@ -8,6 +8,11 @@ body,
   padding: 0;
   background: #ffffff;
 }
+
+body {
+  user-select: none;
+}
+
 .site-layout .site-layout-background {
   background: #ffffff;
 }
@@ -85,9 +90,7 @@ body,
 }
 
 .ls{
-  justify-content: flex-end;
-  float: right;
-  margin-right: 10px;
+  margin: 0 20px;
 }
 
 [data-theme="dark"] .ant-layout-content {
@@ -111,42 +114,66 @@ body,
   stroke-width: 2px;
 }
 
+$imageHeight: 40;
+$subwayHeight: 60;
+
+.image-wrapper {
+  width: 100%; 
+  position: absolute; 
+  top: 0;
+  bottom: #{$imageHeight}+'%';
+  display: flex; 
+  flex-direction: row;
+  justify-content: center;
+}
+
+.subway-wrapper {
+  color: black;
+  width: 100%;
+  position: absolute;
+  top: #{$subwayHeight}+'%';
+  bottom: 0;
+  overflow: hidden;
+}
+
 .svg-wrapper{
-  overflow-y: auto;
-  overflow-x: auto;
+  /* overflow-y: auto;
+  overflow-x: auto; */
   width: 100%;
-}
+  position: absolute;
+  top: 30px;
+  bottom: 0px;
 
-.svg-wrapper .subway {
-  width: 100%;
-}
-
-body {
-  user-select: none;
+  .subway {
+    width: 100%;
+    height: 100%;
+  }
 }
 
 .row {
-  position: relative;
-}
-
-.row .scale {
+  width: 100%;
+  height: 30px;
   position: absolute;
-  top: 50%;
-  right: 20px;
-  height: 5px;
-  background-color: #ffffff;
-  border: 2px solid #000000;
-  border-top: 0px;
-}
+  
+  .scale {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    height: 5px;
+    background-color: #ffffff;
+    border: 2px solid #000000;
+    border-top: 0px;
+  }
 
-.row .scaleText {
-  position: absolute;
-  bottom: 50%;
-  right: 20px;
-  height: 14px;
-  line-height: 14px;
-  font-size: 10px;
-  text-align: center;
+  .scaleText {
+    position: absolute;
+    bottom: 50%;
+    right: 20px;
+    height: 14px;
+    line-height: 14px;
+    font-size: 10px;
+    text-align: center;
+  }
 }
 
 /* > .code-box-demo > .ant-layout + .ant-layout {

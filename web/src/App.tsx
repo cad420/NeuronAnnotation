@@ -1,6 +1,6 @@
 import React from "react";
 import Format from "./format";
-import "./style.css";
+import "./style.scss";
 
 const App: React.FC = () => {
   return <Format/>;

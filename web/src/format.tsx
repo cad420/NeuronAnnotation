@@ -284,9 +284,9 @@ const Format: React.FC = () => {
     }
 
     return (
-            <div>
-                <Layout>
-                <Header style={{marginTop:40}}>
+            <div style={{height: '100%'}}>
+                <Layout style={{height: '100%'}}>
+                {/* <Header style={{marginTop:40}}>
                     <Row> 
                         <Col flex="380px">
                             <RenderSelecter />
@@ -304,10 +304,31 @@ const Format: React.FC = () => {
                             />
                         </Col>
                     </Row>
-                </Header>
-                <Layout>
-                <Sider width={610}>
-                    <div style={{ width: 590, height:600, overflowY:'auto',marginLeft:20 }} >
+                </Header> */}
+                <Layout> 
+                <Sider width={610} style={{paddingTop: 20, paddingLeft: 20, position: 'relative'}}>
+                    <Row> 
+                        <Col flex="380px">
+                            <RenderSelecter />
+                        </Col>
+                        <Col flex="auto">
+                            <ToolsHeader data={data}/>
+                        </Col>
+                    </Row>
+                    <Row style={{paddingTop: 10}}>
+                        <Col flex="1">
+                            <LoadAndSave
+                                data={data} 
+                                changeTable={changeTable}
+                            />
+                        </Col>
+                    </Row>
+                    <Row style={{paddingTop: 10}}>
+                        <Col>
+                            <AddLine/>
+                        </Col>
+                    </Row>
+                    <div style={{ position: 'absolute', top: 180, bottom: 150, width: 590, overflowY:'auto' }} >
                     <SrcTable
                         rowSelection={rowSelection}
                         onClickJumpToVex={onClickJumpToVex}
@@ -318,7 +339,7 @@ const Format: React.FC = () => {
                         />
                     </div>
                     <Divider dashed /> 
-                    <Card style={{ width: 550, marginLeft:50 }}>
+                    <Card style={{ width: 550, position: 'absolute', bottom: 20 }}>
                         <Info
                             data={data}
                             selectedMapKey={selectedMapKey}
@@ -326,20 +347,30 @@ const Format: React.FC = () => {
                     </Card>
                 </Sider>
                 <Content >
-                    <Divider dashed />
-                    <Row>
-                        <Image
-                            selectedTool={selectedTool}
-                            setData={setData}
+                    {/* <Divider dashed /> */}
+                    <div style={{width: '100%', height: '100%', position: 'relative'}}>
+                        
+                            <Image
+                                selectedTool={selectedTool}
+                                setData={setData}
+                                initSelectedKey={initSelectedKey}
+                                src={src}
+                                setSrc={setSrc}
+                            />
+                        
+                        <SubwayVis
+                            data={data}
+                            onClickJumpToVex={onClickJumpToVex}
+                            selectedMapKey={selectedMapKey}
+                            selectedVertexKey={selectedVertexKey}
                             initSelectedKey={initSelectedKey}
-                            src={src}
-                            setSrc={setSrc}
+                            setData={setData}
                         />
-                    </Row>
+                    </div>
                 </Content>
                 </Layout>
                 </Layout>
-                <Footer>
+                {/* <Footer>
                     <Col span={24}>
                         <SubwayVis
                             data={data}
@@ -350,7 +381,7 @@ const Format: React.FC = () => {
                             setData={setData}
                         />
                     </Col>
-                </Footer>
+                </Footer> */}
             </div>
     )
 };

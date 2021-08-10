@@ -16,8 +16,8 @@ const DEBOUNCE = 5;
 
 const Image: React.FC = (props) => {
   const [src, setSrc] = useState("");
-  const [width, setWidth] = useState(1200);
-  const [height, setHeight] = useState(700);
+  const [width, setWidth] = useState(600);
+  const [height, setHeight] = useState(350);
   const [recording, setRecording] = useState(false); //标注模式
   const img = useRef<HTMLImageElement>(null);
   useEffect(() => {
@@ -151,24 +151,32 @@ const Image: React.FC = (props) => {
       window.cancelAnimationFrame(loop);
     };
   }, []);
-
+  {/* <div>{recording ? "已进入标注模式，右键添加标注点" : "按R进入标注模式，F键退出标注模式"}</div> */}
+  const h = (document.querySelector('.image-wrapper')?.clientHeight || height) * 0.9;
+  const w = (document.querySelector('.image-wrapper')?.clientWidth || width) * 0.9;
+  console.log(h);
+  const h1 = w * 700 / 1200;
+  let finalW, finalH;
+  if (h < h1) {
+    [finalW, finalH] = [h * 1200 / 700, h];
+  } else {
+    [finalW, finalH] = [w, w * 700 / 1200];
+  }
   return (
-    <div>
+    <div className="image-wrapper">
       <img
         className="interactive-img"
         src={props.src}
-        width={width}
-        height={height}
+        width={finalW}
+        height={finalH}
         ref={img}
         alt=""
         style={{
-          width: `${width}px`,
-          height: `${height}px`,
-          opacity: props.src ? 1 : 0,
+          width: `${finalW}px`,
+          height: `${finalH}px`,
+          opacity: props.src ? 1 : 0
         }}
       />
-
-      <div>{recording ? "已进入标注模式，右键添加标注点" : "按R进入标注模式，F键退出标注模式"}</div>
     </div>
   );
 };

@@ -110,9 +110,9 @@ const getLongestPath = (tree: any, depth: number) => {
 
 /* 绘制地铁图所需参数 */
 const svgWidth = 800;  //SVG默认宽度, 实际取屏幕宽度
-const svgHeight = 600;  //SVG高度
+let svgHeight = 400;  //SVG高度
 const horizontalPadding = 40; //水平padding
-const verticalPadding = svgHeight * 0.02; //垂直padding
+let verticalPadding = svgHeight * 0.02; //垂直padding
 
 const visOptions = {
     svgWidth,
@@ -127,15 +127,24 @@ const visOptions = {
     defaultRadius: 4,
     branchRate: 0.5, // 分支偏移不能大于上一个分支偏移的比例
     depthRate: 0.97, // 层数对应的偏移衰减
-    radiusRate: 1.5,
+    radiusRate: 1,
     strokeWidthRate: 0.97, //stroke-width衰减率
-    initialPolyLineStrokeWidth: 6,
+    initialPolyLineStrokeWidth: 3,
     circleStrokeWidth: 2,
     textFontSize: 11,
     upBound: verticalPadding,  //上边界
     downBound: svgHeight - verticalPadding, //下边界
     timeOut: 100 //绘制函数防抖延迟
 };
+
+const reCalSvgHeight = function(h: number) {
+    verticalPadding = h * 0.02;
+    svgHeight = h;
+    visOptions.svgHeight = h;
+    visOptions.startY = h / 2;
+    visOptions.downBound = h - verticalPadding;
+}
+
 let polyLineStrokeWidth: number = visOptions.initialPolyLineStrokeWidth; //线段宽度
 
 const scales = [1, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 100000];
@@ -261,11 +270,13 @@ class SubwayVis extends React.Component<Props, State> {
     }
 
     componentDidMount() {
-        d3.select('.subway').attr("height", visOptions.svgHeight);
+        // d3.select('.subway').attr("height", visOptions.svgHeight);
         this.setState({svgRef: d3.select('.subway')});
         setTimeout(() => {
             const svgDom = document.querySelector("svg.subway");
             visOptions.svgWidth = svgDom ? svgDom.clientWidth : svgWidth;
+            const h = svgDom?.clientHeight || svgHeight;
+            reCalSvgHeight(h);
             if( this.props.data.graphs && this.props.data.graphs[this.props.selectedMapKey].sub[this.props.selectedVertexKey] ){
                 new Promise((resolve) => {
                     this.setState({preData:this.props.data, rootIndex:this.props.data.selectedVertexIndex }, () => {resolve(true)});
@@ -714,27 +725,23 @@ class SubwayVis extends React.Component<Props, State> {
             </Menu>
           );
         return (
-            <div>
-                <Collapse defaultActiveKey={['1']}>
-                    <Panel header="二维可视化" key="1">
-                        <Row className="row">
-                            <Col>
-                                <Space>
-                                    选择端点Index： <InputNumber value={this.props.data.selectedVertexIndex} onChange={(v)=>this.onChange(v)} />
-                                    <span> Index: </span><Switch checkedChildren="显示" unCheckedChildren="隐藏" onChange={this.handleIndexVisChange}></Switch>
-                                </Space>
-                            
-                            </Col>
-                            <div className="scale"></div>
-                            <div className="scaleText"></div>
-                        </Row>
-                        <Dropdown overlay={menu} trigger={['contextMenu']} visible={this.state.menuVisible}>
-                            <div className="svg-wrapper" onClick={() => this.setState({menuVisible:false})}>
-                                    <svg className="subway"></svg>
-                            </div>
-                        </Dropdown>
-                    </Panel>
-                </Collapse>
+            <div className="subway-wrapper">
+                <Row className="row">
+                    <Col>
+                        <Space>
+                            <span style={{marginLeft: 20}}>选择端点Index</span>： <InputNumber value={this.props.data.selectedVertexIndex} onChange={(v)=>this.onChange(v)} />
+                            <span> Index: </span><Switch checkedChildren="显示" unCheckedChildren="隐藏" onChange={this.handleIndexVisChange}></Switch>
+                        </Space>
+                    
+                    </Col>
+                    <div className="scale"></div>
+                    <div className="scaleText"></div>
+                </Row>
+                <Dropdown overlay={menu} trigger={['contextMenu']} visible={this.state.menuVisible}>
+                    <div className="svg-wrapper" onClick={() => this.setState({menuVisible:false})}>
+                            <svg className="subway"></svg>
+                    </div>
+                </Dropdown>
             </div>
         );
     }
