@@ -51,8 +51,8 @@ class ToolsHeader extends React.Component<Props, State> {
         }
 
         return (
-            <div>
-                <Radio.Group defaultValue={selectedTool} onChange={handleToolsChange} size="large">
+            <span>
+                <Radio.Group defaultValue={selectedTool} onChange={handleToolsChange}>
                 <Tooltip
                     placement="bottom"
                     title="拖动模式"
@@ -94,7 +94,7 @@ class ToolsHeader extends React.Component<Props, State> {
                 <Radio.Button value={4} ><DeleteOutlined /></Radio.Button>
                 </Tooltip>
             </Radio.Group>
-          </div>
+          </span>
         );
     }
 };

@@ -17,8 +17,8 @@ import {
     EyeOutlined,
     CheckCircleOutlined,
     InfoCircleOutlined,
-    FileAddOutlined,
-    MenuOutlined
+    DeleteOutlined,
+    QuestionCircleOutlined
 } from '@ant-design/icons';
 import {SortableContainer, SortableElement, SortableHandle} from 'react-sortable-hoc';
 import arrayMove from 'array-move';
@@ -165,11 +165,13 @@ class SrcTable extends React.Component<EditableTableProps, EditableTableState>{
               dataIndex: 'name',
               key: 'name',
               editable: true,
+              align: 'center'
             },
             {
               title: '颜色',
               dataIndex: 'color',
               key: 'color',
+              align: 'center',
               render: (c,row) => (
                 <div>
                 <InputColor
@@ -183,6 +185,7 @@ class SrcTable extends React.Component<EditableTableProps, EditableTableState>{
                 title: '状态',
                 dataIndex: 'status',
                 key: 'status',
+                align: 'center',
                 render: (st,row) => (
                     <div>
                         <a onClick={()=>this.changeStatus(st,row)}>
@@ -195,11 +198,13 @@ class SrcTable extends React.Component<EditableTableProps, EditableTableState>{
               title: '操作',
               key: 'action',
               dataIndex: 'action',
+              align: 'center',
               render: (_, record) => (
                   <div>
                     <Space size="middle">
                         <Popconfirm title="确定删除吗？" onConfirm={() => this.handleDelete(record)}>
-                            <Button danger type="primary" size="small" onClick={()=>this.showPopconfirm()}>删除</Button>
+                            {/* <Button danger type="primary" size="small" onClick={()=>this.showPopconfirm()}>删除</Button> */}
+                            <DeleteOutlined onClick={() => {this.showPopconfirm()}}/>
                         </Popconfirm>
                         <Popover content={()=>{
                           if( ! record )return;
@@ -223,8 +228,9 @@ class SrcTable extends React.Component<EditableTableProps, EditableTableState>{
                           </div>
                           )
                         }
-                        } title={record.name + " 详情"} trigger="focus">
-                            <Button type="primary" size="small">详情</Button>
+                        } title={record.name + " 详情"} trigger="click">
+                            {/* <Button type="primary" size="small">详情</Button> */}
+                            <QuestionCircleOutlined />
                         </Popover>
                     </Space>
                 </div>               
@@ -600,7 +606,7 @@ class SrcTable extends React.Component<EditableTableProps, EditableTableState>{
             };
           });
         return(
-        <div style={{margin:'0 8px'}}>
+        <div>
             <Table components={components}
             rowSelection={{type:"radio",...this.props.rowSelection}}
             rowClassName={() => 'editable-row'}

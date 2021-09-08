@@ -3,11 +3,15 @@ import { Button, Radio, Space, Divider } from 'antd';
 import {BulbOutlined} from '@ant-design/icons'
 import axios from 'axios';
 
+interface Props {};
+interface State {
+    selectedRender: string
+}
 
 const _SOCKETLINK = "ws://127.0.0.1:12121/info";
-class RenderSelecter extends React.Component {
-    constructor(props){
-        super(props)
+class RenderSelecter extends React.Component<Props, State> {
+    constructor(props: Props){
+        super(props);
         this.state = {
             selectedRender: "DVR",
         };
@@ -37,7 +41,7 @@ class RenderSelecter extends React.Component {
     render(){
         const {selectedRender} = this.state;
         return (
-            <div style={{margin:'0 20px'}}>
+            <span>
                 <Space align="baseline" split={<Divider type="vertical" />}>
                     <h4><BulbOutlined />选择渲染方式</h4>
                         <Radio.Group value={selectedRender} onChange={(v)=>this.handleRenderChange(v.target.value)}>
@@ -46,7 +50,7 @@ class RenderSelecter extends React.Component {
                             <Radio.Button value="LINE">LINE</Radio.Button>
                         </Radio.Group>
                 </Space>
-          </div>
+          </span>
         );
     }
 };

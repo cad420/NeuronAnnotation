@@ -9,6 +9,8 @@ import SubwayVis from "./subwayVis";
 import "./style.css";
 import Info from "./Info";
 import AddLine from "./AddLine";
+import { RightOutlined, LeftOutlined } from "@ant-design/icons";
+import * as d3 from "d3";
 
 const { Header, Footer, Sider, Content } = Layout;
 const _SOCKETLINK = "ws://127.0.0.1:12121/info";
@@ -282,39 +284,22 @@ const Format: React.FC = () => {
             };
         }
     }
+    const [subwayVisible, setSubwayVisible] = useState(false);
+    const openSubwayVis = function() {
+        setSubwayVisible(!subwayVisible);
+    }
 
     return (
-            <div style={{height: '100%'}}>
-                <Layout style={{height: '100%'}}>
-                {/* <Header style={{marginTop:40}}>
-                    <Row> 
-                        <Col flex="380px">
-                            <RenderSelecter />
-                        </Col>
-                        <Col flex="0 0 280px"> 
-                            <AddLine/>
-                        </Col>
-                        <Col flex="0 0 700px">
-                        <ToolsHeader data={data}/>
-                        </Col>
-                        <Col flex="auto">
-                            <LoadAndSave
-                                data={data} 
-                                changeTable={changeTable}
-                            />
-                        </Col>
-                    </Row>
-                </Header> */}
-                <Layout> 
-                <Sider width={610} style={{paddingTop: 20, paddingLeft: 20, position: 'relative'}}>
-                    <Row> 
+            <div className="format">
+                <div className="sidebar">
+                    {/* <Row> 
                         <Col flex="380px">
                             <RenderSelecter />
                         </Col>
                         <Col flex="auto">
                             <ToolsHeader data={data}/>
                         </Col>
-                    </Row>
+                    </Row> */}
                     <Row style={{paddingTop: 10}}>
                         <Col flex="1">
                             <LoadAndSave
@@ -323,65 +308,63 @@ const Format: React.FC = () => {
                             />
                         </Col>
                     </Row>
+                    <Divider dashed style={{margin: '10px 0 0 0'}}></Divider>
                     <Row style={{paddingTop: 10}}>
                         <Col>
                             <AddLine/>
                         </Col>
                     </Row>
-                    <div style={{ position: 'absolute', top: 180, bottom: 150, width: 590, overflowY:'auto' }} >
-                    <SrcTable
-                        rowSelection={rowSelection}
-                        onClickJumpToVex={onClickJumpToVex}
-                        data={data}
-                        setData={setData}
-                        setSrc={setSrc}
-                        initSelectedKey={initSelectedKey}
+                    <div className={`table-wrapper ${subwayVisible ? 'subway-visible': ''}`} >
+                        <SrcTable
+                            rowSelection={rowSelection}
+                            onClickJumpToVex={onClickJumpToVex}
+                            data={data}
+                            setData={setData}
+                            setSrc={setSrc}
+                            initSelectedKey={initSelectedKey}
                         />
                     </div>
-                    <Divider dashed /> 
-                    <Card style={{ width: 550, position: 'absolute', bottom: 20 }}>
+                    <div className={`info-card ${subwayVisible ? 'subway-visible' : ''}`}>
                         <Info
                             data={data}
                             selectedMapKey={selectedMapKey}
                         />
-                    </Card>
-                </Sider>
-                <Content >
-                    {/* <Divider dashed /> */}
-                    <div style={{width: '100%', height: '100%', position: 'relative'}}>
-                        
-                            <Image
-                                selectedTool={selectedTool}
-                                setData={setData}
-                                initSelectedKey={initSelectedKey}
-                                src={src}
-                                setSrc={setSrc}
-                            />
-                        
-                        <SubwayVis
-                            data={data}
-                            onClickJumpToVex={onClickJumpToVex}
-                            selectedMapKey={selectedMapKey}
-                            selectedVertexKey={selectedVertexKey}
-                            initSelectedKey={initSelectedKey}
-                            setData={setData}
-                        />
                     </div>
-                </Content>
-                </Layout>
-                </Layout>
-                {/* <Footer>
-                    <Col span={24}>
-                        <SubwayVis
-                            data={data}
-                            onClickJumpToVex={onClickJumpToVex}
-                            selectedMapKey={selectedMapKey}
-                            selectedVertexKey={selectedVertexKey}
-                            initSelectedKey={initSelectedKey}
+                </div>
+                <div className={`content ${subwayVisible ? 'subway-visible' : ''}`} >
+                        <div className="tool-header">
+                            
+                                <RenderSelecter />
+                                <span style={{paddingLeft: 100}}><ToolsHeader data={data}/></span>
+                            
+                        </div>
+                        <Image
+                            selectedTool={selectedTool}
                             setData={setData}
+                            initSelectedKey={initSelectedKey}
+                            src={src}
+                            setSrc={setSrc}
+                            vis={subwayVisible}
                         />
-                    </Col>
-                </Footer> */}
+                </div>
+                
+
+                <div className={`shadow-box ${subwayVisible === true ? 'clicked': ''}`} >
+                    {subwayVisible ? <SubwayVis
+                        data={data}
+                        onClickJumpToVex={onClickJumpToVex}
+                        selectedMapKey={selectedMapKey}
+                        selectedVertexKey={selectedVertexKey}
+                        initSelectedKey={initSelectedKey}
+                        setData={setData}
+                    /> : ''}
+
+                    <div className='arrow-wrapper' onClick={openSubwayVis}> 
+                        {subwayVisible ? <LeftOutlined/> : <RightOutlined/>}
+                    </div>
+                </div>
+                
+                
             </div>
     )
 };

@@ -35,7 +35,7 @@ const LoadAndSave: React.FC = (props) => {
   }
 
   return (
-      <div className="ls">
+      <div>
       <Space>
         <Tooltip
           placement="left"
@@ -47,7 +47,7 @@ const LoadAndSave: React.FC = (props) => {
             defaultValue="请选择工作集合"
             value={props.data.selectedTableName}
             style={{ width: 200 }}
-            size="large"
+            size="middle"
             options={props.data.tableList}
             onChange={props.changeTable}></Select>
       </Tooltip>
@@ -58,7 +58,7 @@ const LoadAndSave: React.FC = (props) => {
           arrowPointAtCenter
           color="blue"
           >
-        <Button icon={<UploadOutlined />} size="large" style={{ marginLeft: 10 }} >上传</Button>
+        <Button icon={<UploadOutlined />} size="middle" style={{ marginLeft: 10 }} >上传</Button>
         </Tooltip>
     </Upload>
       <Tooltip
@@ -67,7 +67,7 @@ const LoadAndSave: React.FC = (props) => {
             arrowPointAtCenter
             color="blue"
             >
-        <Button icon={<DownloadOutlined />} size="large" href={_DOWNLOAD} download={props.data.selectedTableName+".swc"}  >下载</Button>
+        <Button icon={<DownloadOutlined />} size="middle" href={_DOWNLOAD} download={props.data.selectedTableName+".swc"}  >下载</Button>
         </Tooltip>
           </Space>
       </div>

@@ -152,28 +152,50 @@ const Image: React.FC = (props) => {
     };
   }, []);
   {/* <div>{recording ? "已进入标注模式，右键添加标注点" : "按R进入标注模式，F键退出标注模式"}</div> */}
-  const h = (document.querySelector('.image-wrapper')?.clientHeight || height) * 0.9;
-  const w = (document.querySelector('.image-wrapper')?.clientWidth || width) * 0.9;
-  console.log(h);
-  const h1 = w * 700 / 1200;
   let finalW, finalH;
-  if (h < h1) {
-    [finalW, finalH] = [h * 1200 / 700, h];
-  } else {
-    [finalW, finalH] = [w, w * 700 / 1200];
+  const getWidthAndHeight = function(clientW: number = 1200, ClientH: number = 700) {
+      const rate = 0.98;
+      const w = clientW * rate;
+      const h = ClientH * rate;
+      const h1 = w * 700 / 1200;
+      let finalW, finalH;
+      if (h < h1) {
+          [finalW, finalH] = [h * 1200 / 700, h];
+      } else {
+          [finalW, finalH] = [w, w * 700 / 1200];
+      }
+      return [finalW, finalH];
   }
+
+  const [w1, setw1] = useState(0);
+  const [h1, seth1] = useState(0);
+
+  const w = document.querySelector('.image-wrapper')?.clientWidth;
+  const h = document.querySelector('.image-wrapper')?.clientHeight;
+  [finalW, finalH] = getWidthAndHeight(w, h);
+  
+
+  useEffect(() => {
+    const w = document.querySelector('.image-wrapper')?.clientWidth;
+    const h = document.querySelector('.image-wrapper')?.clientHeight;
+    [finalW, finalH] = getWidthAndHeight(w, h);
+    console.log(finalW, finalH);
+    setw1(finalW);
+    seth1(finalH);
+  }, [props.vis]);
+
   return (
     <div className="image-wrapper">
       <img
         className="interactive-img"
         src={props.src}
-        width={finalW}
-        height={finalH}
+        width={w1 || finalW}
+        height={h1 || finalH}
         ref={img}
         alt=""
         style={{
-          width: `${finalW}px`,
-          height: `${finalH}px`,
+          width: `${w1 || finalW}px`,
+          height: `${h1 || finalH}px`,
           opacity: props.src ? 1 : 0
         }}
       />

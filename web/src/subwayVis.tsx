@@ -69,6 +69,7 @@ const graph2Tree = (graph:Graph, key:number, firstPlot: boolean)  => {
 
     const tree = dfs(root);
     assignBranchCount(tree, 0);
+    console.log(tree);
     return tree;
 }
 
@@ -111,7 +112,7 @@ const getLongestPath = (tree: any, depth: number) => {
 /* 绘制地铁图所需参数 */
 const svgWidth = 800;  //SVG默认宽度, 实际取屏幕宽度
 let svgHeight = 400;  //SVG高度
-const horizontalPadding = 40; //水平padding
+const horizontalPadding = 60; //水平padding
 let verticalPadding = svgHeight * 0.02; //垂直padding
 
 const visOptions = {
@@ -121,15 +122,15 @@ const visOptions = {
         horizontal: horizontalPadding,
         vertical: verticalPadding
     },
-    startX: 20,
+    startX: horizontalPadding / 2,
     startY: svgHeight / 2,
     circleFillColor: "#ADD8E6", //lightblue
     defaultRadius: 4,
     branchRate: 0.5, // 分支偏移不能大于上一个分支偏移的比例
-    depthRate: 0.97, // 层数对应的偏移衰减
+    depthRate: 0.975, // 层数对应的偏移衰减
     radiusRate: 1,
-    strokeWidthRate: 0.97, //stroke-width衰减率
-    initialPolyLineStrokeWidth: 3,
+    strokeWidthRate: 0.96, //troke-width衰减率
+    initialPolyLineStrokeWidth: 2.5,
     circleStrokeWidth: 2,
     textFontSize: 11,
     upBound: verticalPadding,  //上边界
@@ -143,6 +144,7 @@ const reCalSvgHeight = function(h: number) {
     visOptions.svgHeight = h;
     visOptions.startY = h / 2;
     visOptions.downBound = h - verticalPadding;
+    visOptions.upBound = verticalPadding;
 }
 
 let polyLineStrokeWidth: number = visOptions.initialPolyLineStrokeWidth; //线段宽度
@@ -272,6 +274,7 @@ class SubwayVis extends React.Component<Props, State> {
     componentDidMount() {
         // d3.select('.subway').attr("height", visOptions.svgHeight);
         this.setState({svgRef: d3.select('.subway')});
+        console.log('mount');
         setTimeout(() => {
             const svgDom = document.querySelector("svg.subway");
             visOptions.svgWidth = svgDom ? svgDom.clientWidth : svgWidth;
@@ -349,37 +352,45 @@ class SubwayVis extends React.Component<Props, State> {
             let maxBranchLength = -1;
             const bcount = current.children.length > 0 ? current.children.length - 1 : 0;
             const singleDir = dirMap.get(currentIndex);
+             /* 绘制策略， 如果当前主干是往上(下)的，则其分支应该也向上(下)， 否则使用交替的nextdir */
+            let recommendDir = offsetMap.get(currentIndex)[1] === 0 ? nextdir : offsetMap.get(currentIndex)[1];
+            let isSingleBranchALeaf = false; // 记录单分支是否为叶子节点
             for (let i = 0; i < current.children.length; i++) {
                 const arc = current.arcs[i];
                 const {distance, critical} = arc;
                 const next: any = current.children[i];
                 const { index: nextIndex } = next;
-                if (critical) {
-                    /*只有一条主干需要绘制，处理这种特殊情况*/
+                if (critical) { // 主干
                     if (bcount === 0) {
+                        /*只有一条主干需要绘制，处理这种特殊情况*/
                         const expanded = expandMap.get(nextIndex);
                         const nextExpand = currentExpand === false ? false : expanded;
                         queue.push([next, nextExpand]);
                         this.paint(current, arc, nextIndex, 0, branchCount, pixelsPerDistance, currentExpand);
                     }
-                    let currentDir;
-                    if (singleDir === 0) {
-                        currentDir = offsetMap.get(currentIndex)[1] === 0 ? nextdir : offsetMap.get(currentIndex)[1];
-                        dirMap.set(nextIndex, bcount === 1? -currentDir: 0);
-                    } else {
+                    // let currentDir;
+                    if (singleDir === 0) { // 当前主干之前未有过单分支
+                        // 分支方向优先与当前主干偏移的方向保持一致，否则使用全局交替的nextdir
+                        dirMap.set(nextIndex, bcount === 1? -recommendDir: 0);
+                    } else { // 当前主干之前有过单分支
+                        // 如果这次不是单分支，dir传递下去， 否则取反
                         dirMap.set(nextIndex, bcount === 1? -singleDir: singleDir);
                     }
                     
-                    continue;
-                }
-                dirMap.set(nextIndex, 0);
-                let tmpDis = (distance + longestPath.get(nextIndex)) * pixelsPerDistance;
-                if (tmpDis > maxBranchLength) {
-                    maxBranchLength = tmpDis;
+                    
+                } else { // 分支
+                    /* 新分支，dir设置为0 */
+                    if (next.children.length === 0) isSingleBranchALeaf = true;
+                    dirMap.set(nextIndex, 0);
+                    // 记录所有分支的最大长度
+                    let tmpDis = (distance + longestPath.get(nextIndex)) * pixelsPerDistance;
+                    if (tmpDis > maxBranchLength) {
+                        maxBranchLength = tmpDis;
+                    }
                 }
             }
             
-            /* 若该节点没有分支，直接处理下一个节点 */
+            /* 若该节点没有分支，前面已经处理主干了，因此直接处理下一个节点， continue */
             if (bcount === 0) {
                 continue;
             }
@@ -403,29 +414,44 @@ class SubwayVis extends React.Component<Props, State> {
                 }
             }
 
-            /* 计算可用空间， 每一个节点的分支在垂直方向应该是均匀的，间隔为step */
+            const hasDiff = function(a: number, b: number) {
+                return Math.abs(a - b) > 2;
+            }
+
+            /* 计算可用空间， 每一个节点的分支在垂直方向应该是均匀的(适用于分支数>=2)，间隔为step */
             const totalSpace = downBoundArr[0] - upBoundArr[0];
             let upSpace = startY - upBoundArr[0];
             let downSpace = downBoundArr[0] - startY;
-            let addtional = bcount === 1 ? 1.5 : 2;
-            let step = totalSpace / (bcount + addtional);
-            
+            let additional;
+            if (bcount === 1) {
+                // 分支数=1 时， additional必须 > 1, 若additional = 1, upSpace = downSpace时出错
+                additional = 1.5;
+            } else if (bcount === 2 && !hasDiff(upSpace, downSpace)) {
+                // 分支树=2， 且upSpace和downSpace被认为一样大时， addtional > 0即可， additional越小， 空间利用率越高
+                additional = 1;
+            } else {
+                // 分支数>=2的情况下 step 至少为 totalSpace / (bcount + 2) 才能确保画出所有分支
+                additional = 2;
+            }
+            let step = totalSpace / (bcount + additional);
+            console.log(currentIndex,[upSpace, downSpace],bcount + additional, step, depth);
 
             /* 记录各分支的垂直方向偏移 */
             let offsets: number[] = [];
-            /* 绘制策略， 如果当前主干是往上(下)的，则其分支应该也向上(下) */
+           
             
             let reduce = false;
-            const recDir = offsetMap.get(currentIndex)[1] === 0 ? nextdir : offsetMap.get(currentIndex)[1];
-            if (bcount === 1) {
+            if (bcount === 1) { 
                 if (singleDir === 0) {
-                    nextdir = recDir;
-                    reduce = true;
+                    nextdir = recommendDir;
+                    // reduce = true;
                 } else {
                     nextdir = singleDir;
                 }
+                /* 若一定要使用该方向进行分支，空间可能不够，需要0.5指数退避 */
+                reduce = true;
             } else {
-                nextdir = recDir;
+                nextdir = recommendDir;
             }
 
             /* 根据上下可用空间 计算出各个分支的偏移 */
@@ -435,13 +461,24 @@ class SubwayVis extends React.Component<Props, State> {
                     const execArr = [nextdir, -nextdir];
                     for (let i = 0; i < execArr.length; i++) {
                         let currentExec = execArr[i];
+                        // 处理reduce情况
                         if (reduce) {
                             if (currentExec === -1) {
-                                while(offset >= upSpace) offset*= 0.5;
+                                if (isSingleBranchALeaf) offset = upSpace * 0.5;
+                                else {
+                                    while(offset >=  upSpace) offset*= 0.5;
+                                    if (offset > 0.9 * upSpace) offset = upSpace * 0.5;
+                                }
+                                // offset = upSpace * 0.5;
                                 offsets.push(-offset);
                                 return;
                             } else {
-                                while(offset >= downSpace) offset*= 0.5;
+                                if (isSingleBranchALeaf) offset = downSpace * 0.5;
+                                else { 
+                                    while (offset >= downSpace) offset*= 0.5;
+                                    if (offset > 0.9 * downSpace) offset = downSpace * 0.5;
+                                }
+                                // offset = downSpace * 0.5;
                                 offsets.push(offset);
                                 return;
                             }
@@ -449,7 +486,8 @@ class SubwayVis extends React.Component<Props, State> {
                         if (currentExec === -1 && offset < upSpace) {
                             offsets.push(-offset);
                             if (offsets.length === bcount) return;
-                        } else if (offset < downSpace){
+                        }
+                        if (currentExec === 1 && offset < downSpace){
                             offsets.push(offset);
                             if (offsets.length === bcount) return;
                         }
@@ -457,6 +495,7 @@ class SubwayVis extends React.Component<Props, State> {
                 }
             }
             getOffsets(upSpace, downSpace);
+            console.log(currentIndex, offsets);
 
             let j = 0;
             for (let i = 0; i < current.children.length; i++) {
@@ -639,7 +678,7 @@ class SubwayVis extends React.Component<Props, State> {
     handleIndexVisChange = (vis: boolean) => {
         this.setState({indexVisible: vis});
         if(vis) {
-            this.addText(this.state.circles);
+            this.addText(circles);
         } else {
             this.removeText();
         }
@@ -717,6 +756,7 @@ class SubwayVis extends React.Component<Props, State> {
     }
 
     render() {
+        console.log('render');
         const menu = (
             <Menu onClick={this.handleMenuClick}>
               <Menu.Item key="1">跳转</Menu.Item>
@@ -726,6 +766,7 @@ class SubwayVis extends React.Component<Props, State> {
           );
         return (
             <div className="subway-wrapper">
+                <div className="subway-wrapper-limited">
                 <Row className="row">
                     <Col>
                         <Space>
@@ -742,6 +783,7 @@ class SubwayVis extends React.Component<Props, State> {
                             <svg className="subway"></svg>
                     </div>
                 </Dropdown>
+                </div>
             </div>
         );
     }

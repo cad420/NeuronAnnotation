@@ -50,8 +50,8 @@ class AddLine extends React.Component {
     render(){
         const self = this;
         return (
-            <div style={{margin:'0 20px'}}>
-                <Button onClick={()=>self.handleAdd()} type="primary" style={{ marginBottom: 16 }} ><FileAddOutlined />添加神经元</Button>
+            <div>
+                <Button onClick={()=>self.handleAdd()} type="primary"><FileAddOutlined />添加神经元</Button>
           </div>
         );
     }
